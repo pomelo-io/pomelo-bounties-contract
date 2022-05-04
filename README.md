@@ -8,40 +8,32 @@
 
 ### `@author`
 
-"https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"
-
 ```bash
 # before creating bounty, must link EOS account with EOSN login
 cleos push action login.eosn link '["author.eosn", "myaccount", "SIG_K1_KjnbJ2m22HtuRW7u7ZLdoCx76aNMiADHJpATGh32uYeJLdSjhdpHA7tmd4pj1Ni3mSr5DPRHHaydpaggrb5RcBg2HDDn7G"]' -p myaccount
 
 # create bounty
-cleos push action work.pomelo createbounty '["author.eosn", "USDT", [{"key": "url", "value": ["string", "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"]} ]]' -p author.eosn
-
-# OPTIONAL. update/modify bounty metadata
-cleos push action work.pomelo setbounty '["author.eosn", 123, [{"key": "url", "value": ["string", "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"]} ]]' -p author.eosn
+cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT"]' -p author.eosn
 
 # fund bounty
-cleos transfer myaccount work.pomelo "100.0000 USDT" "author.eosn:123" --contract tethertether
+cleos transfer myaccount work.pomelo "100.0000 USDT" "bounty1" --contract tethertether
 
 # make bounty public
-cleos push action work.pomelo setstate '[author.eosn, 123, "published"]' -p work.pomelo
+cleos push action work.pomelo setstate '[bounty1, published]' -p work.pomelo
 
 # author select hunter for bounty
-cleos push action work.pomelo approve '[author.eosn, 123, hunter.eosn]' -p author.eosn
+cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p author.eosn
 
-# OPTION 1. author release funds for completed bounty
-cleos push action work.pomelo release '[author.eosn, 123]' -p author.eosn
+# OPTION 1. Author releases funds to hunter when bounty is completed
+# > Bounty state must be "completed"
+cleos push action work.pomelo release '[bounty1]' -p author.eosn
 
 # OPTION 2. Author denies completed bounty
-# Hunter has 72 hours to respond to deny request
-# Bounty is set to un-completed state after 72 hours of no response (funds can be withdrawn by author).
-cleos push action work.pomelo deny '[author.eosn, 123]' -p author.eosn
+# > Bounty state is reverted back to "progress"
+cleos push action work.pomelo deny '[bounty1]' -p author.eosn
 
-# OPTION 3. funds auto-released after 72 hours
+# OPTION 3. funds auto-released to hunter after 72 hours
 # /* no action */
-
-# author withdraws funds from no-completed bounty (using EOSN login linked EOS account)
-cleos push action work.pomelo withdraw '[author.eosn, 123]' -p myaccount
 ```
 
 ### `@user`
@@ -51,22 +43,32 @@ cleos push action work.pomelo withdraw '[author.eosn, 123]' -p myaccount
 cleos push action login.eosn link '["hunter.eosn", "myaccount", "SIG_K1_KjnbJ2m22HtuRW7u7ZLdoCx76aNMiADHJpATGh32uYeJLdSjhdpHA7tmd4pj1Ni3mSr5DPRHHaydpaggrb5RcBg2HDDn7G"]' -p myaccount
 
 # hunter apply to bounty
-cleos push action work.pomelo apply '[author.eosn, 123, hunter.eosn]' -p hunter.eosn
+cleos push action work.pomelo apply '[bounty1, hunter.eosn]' -p hunter.eosn
 
-# hunter completes work (funds are auto-released after 72 hours of no response from author)
-cleos push action work.pomelo complete '[author.eosn, 123]' -p hunter.eosn
+# hunter signals work is completed (funds are auto-released after 72 hours if no explicit approval from author)
+cleos push action work.pomelo complete '[bounty1]' -p hunter.eosn
 
-# hunter claims bounty funds (using EOSN login linked EOS account)
-cleos push action work.pomelo claim '[author.eosn, 123]' -p myaccount
+# hunter claims bounty funds (EOS account linked with EOSN Login)
+cleos push action work.pomelo claim '[bounty1]' -p myaccount
 ```
 
 ### `@admin`
 
 ```bash
 # configure app
-cleos push action work.pomelo setconfig '[500, "login.eosn", "fee.pomelo", [{ "name": "url", "type": "string" }]]' -p work.pomelo
+cleos push action work.pomelo setconfig '[1000, "login.eosn", "fee.pomelo"]' -p work.pomelo
 cleos push action work.pomelo token '["4,EOS", "eosio.token", 10000, 1]' -p work.pomelo
 cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 0]' -p work.pomelo
+```
+
+### `@author` (Optional)
+
+```bash
+# set bounty metadata
+cleos push action work.pomelo setmetadata '[bounty1, {"url": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"}]' -p author.eosn
+
+# author withdraws funds bounty in "pending" state (EOS account linked with EOSN Login)
+cleos push action work.pomelo withdraw '[bounty1]' -p myaccount
 ```
 
 ## Dependencies
@@ -105,13 +107,15 @@ $ ./test.sh
 - [TABLE `bounties`](#tables-bounties)
 - [TABLE `transfers`](#table-transfers)
 - [TABLE `tokens`](#table-tokens)
-- [ACTION `createbounty`](#action-createbounty)
-- [ACTION `setbounty`](#action-setbounty)
 - [ACTION `setconfig`](#action-setconfig)
 - [ACTION `token`](#action-token)
+- [ACTION `deltoken`](#action-deltoken)
+- [ACTION `createbounty`](#action-createbounty)
+- [ACTION `setbounty`](#action-setbounty)
 - [ACTION `setstate`](#action-setstate)
 - [ACTION `approve`](#action-approve)
 - [ACTION `release`](#action-release)
+- [ACTION `withdraw`](#action-withdraw)
 - [ACTION `deny`](#action-deny)
 - [ACTION `apply`](#action-apply)
 - [ACTION `complete`](#action-complete)

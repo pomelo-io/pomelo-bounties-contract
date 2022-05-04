@@ -23,7 +23,18 @@ public:
     using contract::contract;
 
     /**
+     * ## STRUCT `Metadata`
+     *
+     * - `{string} url` - URL for bounty
+     */
+    struct Metadata {
+        string      url;
+    };
+
+    /**
      * ## TABLE `status`
+     *
+     * ### params
      *
      * - `{vector<uint32_t>} counters` - counters
      *   - `{uint32_t} counters[0]` - total created
@@ -31,7 +42,7 @@ public:
      *   - `{uint32_t} counters[2]` - total denied
      *   - `{uint32_t} counters[3]` - total completed
      *   - `{uint32_t} counters[3]` - total claimed
-     * - `time_point_sec` last_updated;
+     * - `{time_point_sec} last_updated`
      *
      * ### example
      *
@@ -50,6 +61,8 @@ public:
 
     /**
      * ## TABLE `globals`
+     *
+     * ### params
      *
      * - `{uint64_t} fee` - platform fee (bips - 1/100 1%)
      * - `{name} login_contract` - EOSN Login contract
@@ -106,44 +119,50 @@ public:
     /**
      * ## TABLE `bounties`
      *
-     * *scope*: `{name} author_user_id`
+     * *scope*: `{name} get_self()`
      *
      * ## params
      *
-     * - `{name} id` - (primary key) bounty ID
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{extended_asset} bounty - funds to be released once bounty is completed
-     * - `{string} url - bounty URL information
-     * - `{name} status = "pending" - status (`pending/published/banned/retired/denied`)
+     * - `{name} bount_id` - (primary key) bounty ID
+     * - `{name} author_user_id` - author (EOSN Login ID)
+     * - `{extended_asset} bounty` - funds to be released once bounty is completed
+     * - `{name} status="pending"` - status (`pending/published/banned/retired/denied/completed`)
+     * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
+     * - `{name} permissions="approval"` - bounty permissions (`approval` = "Author must approve hunter to start work")
+     * - `{Metadata} metadata={}` - bounty metadata
      * - `{time_point_sec} created_at` - created at time
      * - `{time_point_sec} updated_at` - updated at time
+     * - `{time_point_sec} completed_at` - completed at time
      *
      * ### example
      *
      * ```json
      * {
-     *     "id": 123,
+     *     "bount_id": "bounty1",
      *     "author_user_id": "123.eosn",
      *     "bounty": {"quantity": "10.0000 USDT", "contract": "tethertether"},
      *     "status": "published",
+     *     "metadata": {"url": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"},
      *     "created_at": "2020-12-06T00:00:00",
      *     "updated_at": "2020-12-06T00:00:00",
+     *     "completed_at": "1970-01-01T00:00:00"
      * }
      * ```
      */
     struct [[eosio::table]] bounties_row {
-        uint64_t                id;
-        name                    type;
+        name                    bounty_id;
         name                    author_user_id;
-        name                    funding_account;
-        set<symbol_code>        accepted_tokens = { symbol_code{"EOS"} };
+        extended_asset          bounty;
         name                    status = "pending"_n;
+        name                    type = "traditional"_n;
+        name                    permissions = "approval"_n;
+        Metadata                metadata;
         time_point_sec          created_at;
         time_point_sec          updated_at;
+        time_point_sec          completed_at;
 
         uint64_t primary_key() const { return id; }
     };
-
     typedef eosio::multi_index< "bounties"_n, bounties_row> bounties_table;
 
     /**
@@ -200,9 +219,10 @@ public:
     };
     typedef eosio::multi_index< "transfers"_n, transfers_row> transfers_table;
 
-
     /**
      * ## ACTION `setconfig`
+     *
+     * - **authority**: `get_self()`
      *
      * ### params
      *
@@ -213,137 +233,19 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo setconfig '[500, "login.eosn", "fee.pomelo"]' -p work.pomelo
+     * $ cleos push action work.pomelo setconfig '[1000, "login.eosn", "fee.pomelo"]' -p work.pomelo
      * ```
      */
     [[eosio::action]]
     void setconfig( const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account );
 
-    /**
-     * ## ACTION `createbounty`
-     *
-     * Create/update grant - wrapper for setproject for grants
-     *
-     * ### params
-     *
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
-     * - `{string} url` - bounty URL information (ex: Github issue url)
-     *
-     * ### Example
-     *
-     * ```bash
-     * $ cleos push action work.pomelo createbounty '["author.eosn", "USDT", "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"]' -p author.eosn
-     * ```
-     */
-    [[eosio::action]]
-    void createbounty( const name author_user_id, const symbol_code accepted_token, const string url );
-
-    /**
-     * ## ACTION `setstate`
-     *
-     * Set grant or bounty state
-     *
-     * ### params
-     *
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{name} bounty_id` - bounty ID
-     * - `{name} status` - status `pending/published/banned/retired/denied'
-     *
-     * ### example
-     *
-     * ```bash
-     * $ cleos push action work.pomelo setstate '["author.eosn", 123, "published"]' -p work.pomelo
-     * ```
-     */
-    [[eosio::action]]
-    void setstate( const name author_user_id, const name bounty_id, const name state );
-
-    /**
-     * ## ACTION `approve`
-     *
-     * Author select hunter for bounty
-     *
-     * ### params
-     *
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{name} bounty_id` - bounty ID
-     * - `{name} user_id - applicant account "hunter" (EOSN Login ID)
-     *
-     * ### example
-     *
-     * ```bash
-     * $ cleos push action work.pomelo approve '[author.eosn, 123, hunter.eosn]' -p author.eosn
-     * ```
-     */
-    [[eosio::action]]
-    void approve( const name author_user_id, const name bounty_id, const name user_id );
-
-    /**
-     * ## ACTION `release`
-     *
-     * Author release funds for completed bounty
-     *
-     * ### params
-     *
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{name} bounty_id` - bounty ID
-     *
-     * ### example
-     *
-     * ```bash
-     * $ cleos push action work.pomelo release '[author.eosn, 123]' -p author.eosn
-     * ```
-     */
-    [[eosio::action]]
-    void release( const name author_user_id, const name bounty_id );
-
-    /**
-     * ## ACTION `deny`
-     *
-     * Author denies completed bounty
-     *
-     * Hunter has 72 hours to respond to deny request
-     *
-     # Bounty is set to un-completed state after 72 hours of no response (funds can be withdrawn by author).
-     *
-     * ### params
-     *
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{name} bounty_id` - bounty ID
-     *
-     * ### example
-     *
-     * ```bash
-     * $ cleos push action work.pomelo deny '[author.eosn, 123]' -p author.eosn
-     * ```
-     */
-    [[eosio::action]]
-    void deny( const name author_user_id, const name bounty_id );
-
-    /**
-     * ## TRANSFER NOTIFY HANDLER `on_transfer`
-     *
-     * Process incoming transfer
-     *
-     * ### params
-     *
-     * - `{name} from` - from EOS account (donation sender)
-     * - `{name} to` - to EOS account (process only incoming)
-     * - `{asset} quantity` - quantity received
-     * - `{string} memo` - transfer memo, i.e. "autho.eosn:123"
-     *
-     */
-    [[eosio::on_notify("*::transfer")]]
-    void on_transfer( const name from, const name to, const asset quantity, const string memo );
-
-    [[eosio::action]]
-    void cleartable( const name table_name, const optional<name> scope );
 
     /**
      * ## ACTION `token`
      *
-     * Set token information
+     * - **authority**: `get_self()`
+     *
+     * Set token as supported asset
      *
      * ### params
      *
@@ -361,8 +263,234 @@ public:
     [[eosio::action]]
     void token( const symbol sym, const name contract, const uint64_t min_amount, const uint64_t oracle_id );
 
+    /**
+     * ## ACTION `deltoken`
+     *
+     * - **authority**: `get_self()`
+     *
+     * Delete token from supported assets
+     *
+     * ### params
+     *
+     * - `{symbol_code} symcode` - symbol code
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo deltoken '["EOS"]' -p work.pomelo
+     * ```
+     */
     [[eosio::action]]
     void deltoken( const symbol_code symcode );
+
+    /**
+     * ## ACTION `createbounty`
+     *
+     * - **authority**: `author_user_id`
+     *
+     * Create bounty
+     *
+     * ### params
+     *
+     * - `{name} author_user_id` - author (EOSN Login ID)
+     * - `{name} bount_id` - bounty ID
+     * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
+     *
+     * ### Example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT"]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token );
+
+    /**
+     * ## ACTION `setstate`
+     *
+     * - **authority**: `get_self()`
+     *
+     * Set grant or bounty state
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     * - `{name} status` - status `pending/published/banned/retired/denied'
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo setstate '[bounty1, published]' -p work.pomelo
+     * ```
+     */
+    [[eosio::action]]
+    void setstate( const name bounty_id, const name state );
+
+    /**
+     * ## ACTION `approve`
+     *
+     * - **authority**: `author_user_id`
+     *
+     * Author select hunter for bounty
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     * - `{set<name>} user_ids - approve selected accounts (EOSN Login ID)
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo approve '[bounty1, [hunter.eosn]]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void approve( const name bounty_id, const set<name> user_ids );
+
+    /**
+     * ## ACTION `release`
+     *
+     * - **authority**: `author_user_id`
+     *
+     * Author releases funds to hunter when bounty is completed
+     *
+     * > Bounty state must be "completed"
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo release '[bounty1]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void release( const name bounty_id );
+
+    /**
+     * ## ACTION `deny`
+     *
+     * - **authority**: `author_user_id`
+     *
+     * Author denies completed bounty
+     *
+     * > Bounty state is reverted back to "progress"
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo deny '[bounty1]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void deny( const name bounty_id );
+
+    /**
+     * ## ACTION `withdraw`
+     *
+     * - **authority**: `account` (EOS account linked to EOSN Login's bounty author)
+     *
+     * Author withdraws funds from bounty in "pending" state (EOS account linked with EOSN Login)
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo withdraw '[bounty1]' -p myaccount
+     * ```
+     */
+    [[eosio::action]]
+    void withdraw( const name bounty_id );
+
+    /**
+     * ## ACTION `apply`
+     *
+     * - **authority**: `user_id`
+     *
+     * Hunter apply to bounty
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     * - `{name} user_id` - user ID (EOS account linked to EOSN Login)
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo apply '[bounty1, hunter.eosn]' -p hunter.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void apply( const name bounty_id, const name user_id );
+
+    /**
+     * ## ACTION `complete`
+     *
+     * - **authority**: `user_id`
+     *
+     * hunter signals work is completed
+     *
+     * > Funds are auto-released after 72 hours if no explicit approval from author
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo complete '[bounty1]' -p hunter.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void complete( const name bounty_id );
+
+    /**
+     * ## ACTION `claim`
+     *
+     * - **authority**: `account` (EOS account linked with EOSN Login)
+     *
+     * Hunter claims bounty funds
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo claim '[bounty1]' -p myaccount
+     * ```
+     */
+    [[eosio::action]]
+    void complete( const name bounty_id );
+
+    /**
+     * ## TRANSFER NOTIFY HANDLER `on_transfer`
+     *
+     * Process incoming transfer
+     *
+     * ### params
+     *
+     * - `{name} from` - from EOS account (donation sender)
+     * - `{name} to` - to EOS account (process only incoming)
+     * - `{asset} quantity` - quantity received
+     * - `{string} memo` - transfer memo, i.e. "autho.eosn:123"
+     */
+    [[eosio::on_notify("*::transfer")]]
+    void on_transfer( const name from, const name to, const asset quantity, const string memo );
+
+    [[eosio::action]]
+    void cleartable( const name table_name, const optional<name> scope );
 
 private:
     void transfer( const name from, const name to, const extended_asset value, const string memo );
