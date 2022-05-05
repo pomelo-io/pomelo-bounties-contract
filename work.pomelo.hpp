@@ -129,6 +129,7 @@ public:
      * - `{name} status="pending"` - status (`pending/published/banned/retired/denied/completed`)
      * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
      * - `{name} permissions="approval"` - bounty permissions (`approval` = "Author must approve hunter to start work")
+     * - `{name} hunters` - list of hunters that have applied or approved
      * - `{Metadata} metadata={}` - bounty metadata
      * - `{time_point_sec} created_at` - created at time
      * - `{time_point_sec} updated_at` - updated at time
@@ -139,8 +140,9 @@ public:
      * ```json
      * {
      *     "bount_id": "bounty1",
-     *     "author_user_id": "123.eosn",
+     *     "author_user_id": "author.eosn",
      *     "bounty": {"quantity": "10.0000 USDT", "contract": "tethertether"},
+     *     "hunters": ["hunter.eosn"],
      *     "status": "published",
      *     "metadata": {"url": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"},
      *     "created_at": "2020-12-06T00:00:00",
@@ -153,6 +155,7 @@ public:
         name                    bounty_id;
         name                    author_user_id;
         extended_asset          bounty;
+        set<name>               hunters;
         name                    status = "pending"_n;
         name                    type = "traditional"_n;
         name                    permissions = "approval"_n;
@@ -472,7 +475,7 @@ public:
      * ```
      */
     [[eosio::action]]
-    void complete( const name bounty_id );
+    void claim( const name bounty_id );
 
     /**
      * ## TRANSFER NOTIFY HANDLER `on_transfer`
