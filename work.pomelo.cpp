@@ -153,50 +153,6 @@ void pomelo::save_transfer( const name from, const name to, const extended_asset
     });
 }
 
-template <typename T>
-void pomelo::set_project( T& projects, const name project_type, const name project_id, const name author_id, const name funding_account, const set<symbol_code> accepted_tokens )
-{
-    // create/update project
-    const auto itr = projects.find( project_id.value );
-    if (itr != projects.end()) {
-        check( project_type == itr->type, "pomelo::set_project: project [type] cannot be modified" );
-        check( author_id == itr->author_user_id, "pomelo::set_project: project [author_id] cannot be modifed" );
-        check( is_account(funding_account) || (project_type == "bounty"_n && funding_account.value == 0), "pomelo::set_project: [funding_account] does not exists" );
-    }
-    else {  // new project
-        if ( project_type == "bounty"_n ) check( funding_account.value == 0, "pomelo::set_project: [funding_account] must be empty for bounties" );
-        else {
-            check( is_account(funding_account), "pomelo::set_project: [funding_account] does not exists" );
-            //reinstantiate table - compiler fails if we just use [projects] here
-            pomelo::grants_table grants( get_self(), get_self().value );
-            auto byauthor = grants.get_index<"byauthor"_n>();
-            int active = 0;
-            for( auto itr1 = byauthor.lower_bound(author_id.value); itr1 != byauthor.end() && itr1->author_user_id == author_id; ++itr1){
-                if( itr1->status == "pending"_n || itr1->status == "published"_n) active++;
-                check(active < 3, "pomelo::set_project: 3 active grants allowed per author");
-            }
-        }
-    }
-
-    for ( const symbol_code accepted_token : accepted_tokens ) {
-        check( is_token_enabled( accepted_token ), "pomelo::set_project: [accepted_token=" + accepted_token.to_string() +"] token is not available" );
-    }
-
-    auto insert = [&]( auto & row ) {
-        row.id = project_id;
-        row.type = project_type;
-        row.author_user_id = author_id;
-        row.funding_account = funding_account;
-        if ( accepted_tokens.size() ) row.accepted_tokens = accepted_tokens;
-        check( accepted_tokens.size(), "pomelo::set_project: [accepted_tokens] cannot be empty");
-        if ( itr == projects.end() ) row.created_at = current_time_point();
-        row.updated_at = current_time_point();
-    };
-
-    if ( itr == projects.end() ) projects.emplace( get_self(), insert );
-    else projects.modify( itr, get_self(), insert );
-}
-
 int pomelo::get_index(const vector<name>& vec, name value)
 {
     for(int i = 0; i < vec.size(); i++){

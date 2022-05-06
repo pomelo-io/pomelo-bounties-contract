@@ -9,16 +9,14 @@ using namespace eosio;
 using namespace std;
 
 // static values
-
 static constexpr extended_symbol VALUE_SYM = { symbol {"USDT", 4}, "tethertether"_n };
-static set<name> STATUS_TYPES = set<name>{"published"_n, "pending"_n, "retired"_n, "banned"_n, "denied"_n};
+// static set<name> STATUS_TYPES = set<name>{"published"_n, "pending"_n, "retired"_n, "banned"_n, "denied"_n};
+static set<name> STATUS_TYPES = set<name>{"pending"_n,"open"_n,"started"_n,"submitted"_n,"done"_n};
 static constexpr uint32_t DAY = 86400;
 
 static string ERROR_INVALID_MEMO = "invalid transfer memo (ex: \"eosio.grants:123\")";
 
-namespace pomelo {
-
-class [[eosio::contract("work.pomelo")]] work : public eosio::contract {
+class [[eosio::contract("work.pomelo")]] pomelo : public eosio::contract {
 public:
     using contract::contract;
 
@@ -123,13 +121,13 @@ public:
      *
      * ## params
      *
-     * - `{name} bount_id` - (primary key) bounty ID
+     * - `{name} bount_id` - (primary key) bounty ID (ex: "bounty1")
      * - `{name} author_user_id` - author (EOSN Login ID)
      * - `{extended_asset} bounty` - funds to be released once bounty is completed
-     * - `{name} status="pending"` - status (`pending/published/banned/retired/denied/completed`)
+     * - `{set<name>} hunters` - list of hunters that have applied or approved
+     * - `{name} status="pending"` - status (`pending/open/started/submitted/done`)
      * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
      * - `{name} permissions="approval"` - bounty permissions (`approval` = "Author must approve hunter to start work")
-     * - `{name} hunters` - list of hunters that have applied or approved
      * - `{Metadata} metadata={}` - bounty metadata
      * - `{time_point_sec} created_at` - created at time
      * - `{time_point_sec} updated_at` - updated at time
@@ -143,7 +141,9 @@ public:
      *     "author_user_id": "author.eosn",
      *     "bounty": {"quantity": "10.0000 USDT", "contract": "tethertether"},
      *     "hunters": ["hunter.eosn"],
-     *     "status": "published",
+     *     "status": "pending",
+     *     "type": "traditional",
+     *     "permissions": "approval",
      *     "metadata": {"url": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"},
      *     "created_at": "2020-12-06T00:00:00",
      *     "updated_at": "2020-12-06T00:00:00",
@@ -241,7 +241,6 @@ public:
      */
     [[eosio::action]]
     void setconfig( const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account );
-
 
     /**
      * ## ACTION `token`
@@ -498,25 +497,15 @@ public:
 private:
     void transfer( const name from, const name to, const extended_asset value, const string memo );
 
-    // // getters
-    // double calculate_value(const extended_asset ext_quantity );
-    // name get_user_id( const name user );
-    // bool is_user( const name user_id );
-    // void validate_round( const uint16_t round_id );
-    // uint16_t get_active_round( const name grant_id );
-    // extended_asset calculate_fee( const extended_asset ext_quantity );
-
-    // // tokens
-    // tokens_row get_token( const extended_symbol ext_sym );
-    // tokens_row get_token( const extended_asset ext_quantity );
-    // bool is_token_enabled( const symbol_code symcode );
-
-    // // globals key/value
-    // // void set_key_value( const name key, const uint64_t value );
-    // // uint64_t get_key_value( const name key );
-    // // bool del_key( const name key );
-
-    // globals_row get_globals();
+    // getters
+    extended_asset calculate_fee( const extended_asset ext_quantity );
+    pomelo::globals_row get_globals();
+    pomelo::tokens_row get_token( const extended_symbol ext_sym );
+    pomelo::tokens_row get_token( const extended_asset ext_quantity );
+    bool is_token_enabled( const symbol_code symcode );
+    double calculate_value( const extended_asset ext_quantity );
+    name get_user_id( const name account );
+    bool is_user( const name user_id );
 
     // template <typename T>
     // void donate_project(const T& table, const name project_id, const name from, const extended_asset ext_quantity, const string memo );
@@ -542,6 +531,4 @@ private:
     // void update_status( const uint32_t index, const uint32_t count );
 
     // void update_social( const name user_id );
-};
-
 };

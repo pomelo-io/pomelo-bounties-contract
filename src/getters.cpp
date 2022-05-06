@@ -4,7 +4,7 @@ using namespace sx;
 
 extended_asset pomelo::calculate_fee( const extended_asset ext_quantity )
 {
-    const int64_t amount = ext_quantity.quantity.amount * get_globals().grant_fee / 10000;
+    const int64_t amount = ext_quantity.quantity.amount * get_globals().fee / 10000;
     return { amount, ext_quantity.get_extended_symbol() };
 }
 
@@ -52,40 +52,5 @@ bool pomelo::is_user( const name user_id )
 {
     const name login_contract = get_globals().login_contract;
     eosn::login::users_table users( login_contract, login_contract.value );
-
     return users.find(user_id.value) != users.end();
-}
-
-void pomelo::validate_round( const uint16_t round_id )
-{
-    pomelo::rounds_table rounds( get_self(), get_self().value );
-    pomelo::seasons_table seasons( get_self(), get_self().value );
-
-    check(round_id != 0, "pomelo::validate_round: [round_id] is not active");
-
-    const auto now = current_time_point().sec_since_epoch();
-    const auto round = rounds.get( round_id, "pomelo::validate_round: [round_id] not found");
-    const auto season = seasons.get( round.season_id, "pomelo::validate_round: [season_id] not found");
-    check(season.start_at.sec_since_epoch() <= now, "pomelo::validate_round: [season_id] has not started");
-    check(now <= season.end_at.sec_since_epoch(), "pomelo::validate_round: [season_id] has expired");
-}
-
-uint16_t pomelo::get_active_round( const name grant_id )
-{
-    const auto season_id = get_globals().season_id;
-    if( season_id == 0) return 0;
-
-    pomelo::seasons_table _seasons( get_self(), get_self().value );
-    pomelo::rounds_table _rounds( get_self(), get_self().value );
-
-    uint16_t active_round_id = 0;
-    const auto& season = _seasons.get( season_id, "pomelo::get_active_round: [season_id] not found");
-    for( const auto round_id: season.round_ids ){
-        const auto round = _rounds.get( round_id, "pomelo::get_active_round: [round_id] not found");
-        if( get_index( round.grant_ids, grant_id ) != -1){
-            check(active_round_id == 0, "pomelo::get_active_round: [grant_id] exist in multiple active rounds");
-            active_round_id = round_id;
-        }
-    }
-    return active_round_id;
 }

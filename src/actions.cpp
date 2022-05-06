@@ -2,40 +2,6 @@
 
 // @admin
 [[eosio::action]]
-void pomelo::setfunding( const name grant_id, const name funding_account)
-{
-    require_auth( get_self() );
-    pomelo::grants_table grants( get_self(), get_self().value );
-
-    auto & grant = grants.get(grant_id.value, "pomelo::setgrantid: [grant_id] does not exists");
-    grants.modify( grant, get_self(), [&]( auto & row ) {
-        row.funding_account = funding_account;
-    });
-}
-
-// @admin
-[[eosio::action]]
-void pomelo::setgrantid( const name grant_id, const name new_grant_id )
-{
-    require_auth( get_self() );
-    pomelo::grants_table grants( get_self(), get_self().value );
-
-    auto & grant = grants.get(grant_id.value, "pomelo::setgrantid: [grant_id] does not exists");
-    grants.emplace( get_self(), [&]( auto & row ) {
-        row.id              = new_grant_id;
-        row.type            = grant.type;
-        row.author_user_id  = grant.author_user_id;
-        row.funding_account = grant.funding_account;
-        row.accepted_tokens = grant.accepted_tokens;
-        row.status          = grant.status;
-        row.created_at      = grant.created_at;
-        row.updated_at      = grant.updated_at;
-    });
-    grants.erase( grant );
-}
-
-// @admin
-[[eosio::action]]
 void pomelo::token( const symbol sym, const name contract, const uint64_t min_amount, const uint64_t oracle_id )
 {
     // authenticate
@@ -63,43 +29,6 @@ void pomelo::token( const symbol sym, const name contract, const uint64_t min_am
     else tokens.modify( itr, get_self(), insert );
 }
 
-[[eosio::action]]
-void pomelo::setseason( const uint16_t season_id, const optional<time_point_sec> start_at, const optional<time_point_sec> end_at, const optional<time_point_sec> submission_start_at, const optional<time_point_sec> submission_end_at, const optional<string> description, const optional<double> match_value )
-{
-    require_auth( get_self() );
-
-    check( season_id > 0, "pomelo::setseason: [season_id] must be positive");
-
-    pomelo::seasons_table seasons( get_self(), get_self().value );
-    const auto itr = seasons.find( season_id );
-
-    const auto insert = [&]( auto & row ) {
-        row.season_id = season_id;
-        if(description) row.description = *description;
-        if(match_value) row.match_value = *match_value;
-        if(start_at) row.start_at = *start_at;
-        if(end_at) row.end_at = *end_at;
-        if(submission_start_at) row.submission_start_at = *submission_start_at;
-        if(submission_end_at) row.submission_end_at = *submission_end_at;
-        row.updated_at = current_time_point();
-        if( !row.created_at.sec_since_epoch() ) row.created_at = current_time_point();
-
-        // validate times
-        check( row.end_at > row.start_at, "pomelo::setseason: [end_at] must be after [start_at]");
-        check( row.end_at.sec_since_epoch() - row.start_at.sec_since_epoch() >= DAY * 1, "pomelo::setseason: active minimum period must be at least 1 day");
-        check( row.submission_end_at > row.submission_start_at, "pomelo::setseason: [submission_end_at] must be after [submission_start_at]");
-        check( row.submission_end_at.sec_since_epoch() - row.submission_start_at.sec_since_epoch() >= DAY * 1, "pomelo::setseason: submission minimum period must be at least 1 day");
-        check( row.submission_start_at <= row.start_at, "pomelo::setseason: [submission_start_at] must be before [start_at]");
-        check( row.submission_end_at <= row.end_at, "pomelo::setseason: [submission_end_at] must be before [end_at]");
-    };
-
-    // erase if all parameters are undefined
-    if( !description && !match_value && !start_at && !end_at) seasons.erase(itr);
-    else if ( itr == seasons.end() ) seasons.emplace( get_self(), insert );
-    else seasons.modify( itr, get_self(), insert );
-}
-
-
 // @admin
 [[eosio::action]]
 void pomelo::deltoken( const symbol_code symcode )
@@ -114,24 +43,32 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @user
 [[eosio::action]]
-void pomelo::setproject( const name author_id, const name project_type, const name project_id, const name funding_account, const set<symbol_code> accepted_tokens )
+void pomelo::createbounty( const name author_id, const name bounty_id, const set<symbol_code> accepted_tokens )
 {
     eosn::login::require_auth_user_id( author_id, get_globals().login_contract );
 
     // tables
-    pomelo::grants_table grants( get_self(), get_self().value );
-    pomelo::bounties_table bounties( get_self(), get_self().value );
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
 
-    // set project
-    if ( project_type == "grant"_n ) {
-        set_project( grants, "grant"_n, project_id, author_id, funding_account, accepted_tokens );
-        check( bounties.find(project_id.value) == bounties.end(), "pomelo::setproject: Bounty with [project_id] already exists" );
+    // validate input
+    const auto itr = projects.find( project_id.value );
+    check( itr.find(bounty_id.value) == grants.end(), "pomelo::setproject: Grant with [bounty_id] already exists" );
+
+    for ( const symbol_code accepted_token : accepted_tokens ) {
+        check( is_token_enabled( accepted_token ), "pomelo::create_bounty: [accepted_token=" + accepted_token.to_string() +"] token is not available" );
     }
-    else if ( project_type == "bounty"_n ) {
-        set_project( bounties, "bounty"_n, project_id, author_id, funding_account, accepted_tokens );
-        check( grants.find(project_id.value) == grants.end(), "pomelo::setproject: Grant with [project_id] already exists" );
-    }
-    else check( false, "pomelo::setproject: invalid [project_type]");
+
+    // create bounty
+    projects.emplace( get_self(), [&]( auto & row ) {
+        row.id = project_id;
+        row.type = project_type;
+        row.author_user_id = author_id;
+        row.funding_account = funding_account;
+        if ( accepted_tokens.size() ) row.accepted_tokens = accepted_tokens;
+        check( accepted_tokens.size(), "pomelo::set_project: [accepted_tokens] cannot be empty");
+        if ( itr == projects.end() ) row.created_at = current_time_point();
+        row.updated_at = current_time_point();
+    });
 }
 
 // @user
