@@ -12,6 +12,7 @@ using namespace std;
 static constexpr extended_symbol VALUE_SYM = { symbol {"USDT", 4}, "tethertether"_n };
 // static set<name> STATUS_TYPES = set<name>{"published"_n, "pending"_n, "retired"_n, "banned"_n, "denied"_n};
 static set<name> STATUS_TYPES = set<name>{"pending"_n,"open"_n,"started"_n,"submitted"_n,"done"_n};
+static set<name> STATUS_DEPOSIT_TYPES = set<name>{"pending"_n, "open"_n, "started"_n};
 static constexpr uint32_t DAY = 86400;
 
 static string ERROR_INVALID_MEMO = "invalid transfer memo (ex: \"eosio.grants:123\")";
@@ -123,7 +124,7 @@ public:
      *
      * - `{name} bount_id` - (primary key) bounty ID (ex: "bounty1")
      * - `{name} author_user_id` - author (EOSN Login ID)
-     * - `{extended_asset} bounty` - funds to be released once bounty is completed
+     * - `{extended_asset} amount` - amount of tokens to be released once bounty is completed
      * - `{set<name>} hunters` - list of hunters that have applied or approved
      * - `{name} status="pending"` - status (`pending/open/started/submitted/done`)
      * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
@@ -139,7 +140,7 @@ public:
      * {
      *     "bount_id": "bounty1",
      *     "author_user_id": "author.eosn",
-     *     "bounty": {"quantity": "10.0000 USDT", "contract": "tethertether"},
+     *     "amount": {"quantity": "10.0000 USDT", "contract": "tethertether"},
      *     "hunters": ["hunter.eosn"],
      *     "status": "pending",
      *     "type": "traditional",
@@ -154,7 +155,7 @@ public:
     struct [[eosio::table]] bounties_row {
         name                    bounty_id;
         name                    author_user_id;
-        extended_asset          bounty;
+        extended_asset          amount;
         set<name>               hunters;
         name                    status = "pending"_n;
         name                    type = "traditional"_n;

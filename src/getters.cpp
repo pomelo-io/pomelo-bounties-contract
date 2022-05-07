@@ -1,6 +1,5 @@
 #include <oracle.defi/oracle.defi.hpp>
 
-using namespace sx;
 
 extended_asset pomelo::calculate_fee( const extended_asset ext_quantity )
 {
