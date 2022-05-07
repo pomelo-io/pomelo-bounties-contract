@@ -176,13 +176,12 @@ public:
      * ### params
      *
      * - `{uint64_t} transfer_id` - (primary key) token transfer ID
+     * - `{name} bounty_id` - bounty ID
      * - `{name} from` - EOS account sender
      * - `{name} to` - EOS account receiver
      * - `{extended_asset} ext_quantity` - amount of tokens transfered
      * - `{asset} fee` - fee charged and sent to `global.fee_account`
      * - `{string} memo` - transfer memo
-     * - `{name} author_user_id - author (EOSN Login ID)
-     * - `{name} bounty_id` - bounty ID
      * - `{double} value` - valuation at time of received
      * - `{checksum256} trx_id` - transaction ID
      * - `{time_point_sec} created_at` - created at time
@@ -192,13 +191,12 @@ public:
      * ```json
      * {
      *     "transfer_id": 10001,
+     *     "bounty_id": 123,
      *     "from": "myaccount",
      *     "to": "work.pomelo",
      *     "ext_quantity": {"contract": "eosio.token", "quantity": "15.0000 EOS"},
      *     "fee": "1.0000 EOS",
      *     "memo": "grant:grant1",
-     *     "author_user_id": "author.eosn",
-     *     "bounty_id": 123,
      *     "value": 100.0,
      *     "trx_id": "3bf31f6c32a8663bf3fdb0993a2bf3784d181dc879545603dca2046f05e0c9e1",
      *     "created_at": "2020-12-06T00:00:00"
@@ -207,13 +205,12 @@ public:
      */
     struct [[eosio::table]] transfers_row {
         uint64_t                transfer_id;
+        name                    bounty_id;
         name                    from;
         name                    to;
         extended_asset          ext_quantity;
         asset                   fee;
         string                  memo;
-        name                    author_user_id;
-        uint64_t                bounty_id;
         double                  value;
         checksum256             trx_id;
         time_point_sec          created_at;

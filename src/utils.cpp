@@ -10,26 +10,6 @@ checksum256 get_trx_id()
     return sha256( buf, read );
 }
 
-/**
- * ## STATIC `parse_name`
- *
- * Parse string for account name. Return default name if invalid. Caller can check validity with name::value.
- *
- * ### params
- *
- * - `{string} str` - string to parse
- *
- * ### returns
- *
- * - `{name}` - name
- *
- * ### example
- *
- * ```c++
- * const name contract = utils::parse_name( "tethertether" );
- * // contract => "tethertether"_n
- * ```
- */
 static name parse_name(const string& str) {
 
     if (str.length() == 0 || str.length() > 12) return {};
@@ -42,4 +22,24 @@ static name parse_name(const string& str) {
         i++;
     }
     return name{str};
+}
+
+template <typename T>
+void pomelo::clear_table( T& table, uint64_t rows_to_clear )
+{
+    auto itr = table.begin();
+    while ( itr != table.end() && rows_to_clear-- ) {
+        itr = table.erase( itr );
+    }
+}
+
+void pomelo::update_status( const uint32_t index, const uint32_t count )
+{
+    status_table _status( get_self(), get_self().value );
+    auto status = _status.get_or_default();
+
+    if ( status.counters.size() <= index ) status.counters.resize( index + 1);
+    status.counters[index] += count;
+    status.last_updated = current_time_point();
+    _status.set( status, get_self() );
 }
