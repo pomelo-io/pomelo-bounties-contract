@@ -165,7 +165,7 @@ public:
         time_point_sec          updated_at;
         time_point_sec          completed_at;
 
-        uint64_t primary_key() const { return id; }
+        uint64_t primary_key() const { return bounty_id.value; }
     };
     typedef eosio::multi_index< "bounties"_n, bounties_row> bounties_table;
 
@@ -490,7 +490,7 @@ public:
     void on_transfer( const name from, const name to, const asset quantity, const string memo );
 
     [[eosio::action]]
-    void cleartable( const name table_name, const optional<name> scope );
+    void cleartable( const name table_name, const optional<name> scope, const optional<uint64_t> max_rows );
 
 private:
     void transfer( const name from, const name to, const extended_asset value, const string memo );
@@ -504,6 +504,9 @@ private:
     double calculate_value( const extended_asset ext_quantity );
     name get_user_id( const name account );
     bool is_user( const name user_id );
+
+    // notifiers
+    void deposit_bounty( const name bounty_id, const name from, const extended_asset ext_quantity, const string memo );
 
     // template <typename T>
     // void donate_project(const T& table, const name project_id, const name from, const extended_asset ext_quantity, const string memo );
@@ -522,8 +525,8 @@ private:
     // template <typename T>
     // vector<T> remove_element(const vector<T>& vec, name id);
 
-    // template <typename T>
-    // void clear_table( T& table, uint64_t rows_to_clear );
+    template <typename T>
+    void clear_table( T& table, uint64_t rows_to_clear );
 
     // // update counters in status singleton
     // void update_status( const uint32_t index, const uint32_t count );

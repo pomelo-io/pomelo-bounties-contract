@@ -43,22 +43,22 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @user
 [[eosio::action]]
-void pomelo::createbounty( const name author_id, const name bounty_id, const symbol_code accepted_token )
+void pomelo::createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token )
 {
-    eosn::login::require_auth_user_id( author_id, get_globals().login_contract );
+    eosn::login::require_auth_user_id( author_user_id, get_globals().login_contract );
 
     // tables
     pomelo::bounties_table _bounties( get_self(), get_self().value );
 
     // validate input
-    const auto itr = projects.find( project_id.value );
+    const auto itr = _bounties.find( project_id.value );
     check( itr.find(bounty_id.value) == grants.end(), "pomelo::createbounty: [bounty_id] already exists" );
     check( is_token_enabled( accepted_token ), "pomelo::createbounty: [accepted_token] is not available" );
 
     // create bounty
-    projects.emplace( get_self(), [&]( auto & row ) {
+    _bounties.emplace( get_self(), [&]( auto & row ) {
         row.bounty_id = bounty_id;
-        row.author_user_id = author_id;
+        row.author_user_id = author_user_id;
         row.bounty = bounty;
         row.hunters = hunters;
         row.status = "pending"_n;
@@ -111,7 +111,7 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
 {
     require_auth( get_self() );
     const uint64_t rows_to_clear = *max_rows == 0 ? -1 : *max_rows;
-    const uint64_t scope = scope ? *scope.value : get_self().value;
+    const uint64_t scope = scope ? scope->value : get_self().value;
 
     // tables
     pomelo::transfers_table transfers( get_self(), scope );
@@ -128,8 +128,44 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
     else check(false, "pomelo::cleartable: [table_name] unknown table to clear" );
 }
 
-void pomelo::transfer( const name from, const name to, const extended_asset value, const string memo )
+[[eosio::action]]
+void approve( const name bounty_id, const set<name> user_ids )
 {
-    eosio::token::transfer_action transfer( value.contract, { from, "active"_n });
-    transfer.send( from, to, value.quantity, memo );
+    check(false, "TO-DO");
+}
+
+[[eosio::action]]
+void release( const name bounty_id )
+{
+    check(false, "TO-DO");
+}
+
+[[eosio::action]]
+void deny( const name bounty_id )
+{
+    check(false, "TO-DO");
+}
+
+[[eosio::action]]
+void withdraw( const name bounty_id )
+{
+    check(false, "TO-DO");
+}
+
+[[eosio::action]]
+void apply( const name bounty_id, const name user_id )
+{
+    check(false, "TO-DO");
+}
+
+[[eosio::action]]
+void complete( const name bounty_id )
+{
+    check(false, "TO-DO");
+}
+
+[[eosio::action]]
+void claim( const name bounty_id )
+{
+    check(false, "TO-DO");
 }

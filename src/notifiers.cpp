@@ -33,7 +33,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name from, const extend
     check( STATUS_DEPOSIT_TYPES.find(bounty.status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for donation");
 
     // check incoming token deposit
-    check( bounty.bounty.get_extended_symbol() == ext_quantity.get_extended_symbol(), "pomelo::deposit_bounty: quantity extended symbol not allowed");
+    check( bounty.amount.get_extended_symbol() == ext_quantity.get_extended_symbol(), "pomelo::deposit_bounty: quantity extended symbol not allowed");
     check( is_token_enabled( symcode ), "pomelo::deposit_bounty: [token=" + symcode.to_string() + "] is not supported");
 
     // require EOSN linked login to allow withdrawals

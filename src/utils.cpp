@@ -10,7 +10,7 @@ checksum256 get_trx_id()
     return sha256( buf, read );
 }
 
-static name parse_name(const string& str) {
+name parse_name(const string& str) {
 
     if (str.length() == 0 || str.length() > 12) return {};
     int i=0;
@@ -42,4 +42,11 @@ void pomelo::update_status( const uint32_t index, const uint32_t count )
     status.counters[index] += count;
     status.last_updated = current_time_point();
     _status.set( status, get_self() );
+}
+
+
+void pomelo::transfer( const name from, const name to, const extended_asset value, const string memo )
+{
+    eosio::token::transfer_action transfer( value.contract, { from, "active"_n });
+    transfer.send( from, to, value.quantity, memo );
 }
