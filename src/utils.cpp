@@ -1,7 +1,7 @@
 #include <eosio/transaction.hpp>
 #include <eosio/crypto.hpp>
 
-checksum256 get_trx_id()
+checksum256 pomelo::get_trx_id()
 {
     size_t size = transaction_size();
     char buf[size];
@@ -10,7 +10,8 @@ checksum256 get_trx_id()
     return sha256( buf, read );
 }
 
-name parse_name(const string& str) {
+name pomelo::parse_name(const string& str)
+{
 
     if (str.length() == 0 || str.length() > 12) return {};
     int i=0;

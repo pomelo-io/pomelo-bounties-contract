@@ -59,7 +59,7 @@ void pomelo::createbounty( const name author_user_id, const name bounty_id, cons
     _bounties.emplace( get_self(), [&]( auto & row ) {
         row.bounty_id = bounty_id;
         row.author_user_id = author_user_id;
-        row.bounty = bounty;
+        row.amount = extended_asset{0, accepted_token};
         row.hunters = hunters;
         row.status = "pending"_n;
         row.type = "traditional"_n;
@@ -114,17 +114,17 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
     const uint64_t scope = scope ? scope->value : get_self().value;
 
     // tables
-    pomelo::transfers_table transfers( get_self(), scope );
-    pomelo::bounties_table bounties( get_self(), scope );
-    pomelo::configs_table configs( get_self(), scope );
-    pomelo::tokens_table tokens( get_self(), scope );
-    pomelo::status_table status( get_self(), scope );
+    pomelo::transfers_table _transfers( get_self(), scope );
+    pomelo::bounties_table _bounties( get_self(), scope );
+    pomelo::configs_table _configs( get_self(), scope );
+    pomelo::tokens_table _tokens( get_self(), scope );
+    pomelo::status_table _status( get_self(), scope );
 
-    if (table_name == "transfers"_n) clear_table( transfers, rows_to_clear );
-    else if (table_name == "bounties"_n) clear_table( bounties, rows_to_clear );
-    else if (table_name == "tokens"_n) clear_table( tokens, rows_to_clear );
-    else if (table_name == "configs"_n) configs.remove();
-    else if (table_name == "status"_n) status.remove();
+    if (table_name == "transfers"_n) clear_table( _transfers, rows_to_clear );
+    else if (table_name == "bounties"_n) clear_table( _bounties, rows_to_clear );
+    else if (table_name == "tokens"_n) clear_table( _tokens, rows_to_clear );
+    else if (table_name == "configs"_n) _configs.remove();
+    else if (table_name == "status"_n) _status.remove();
     else check(false, "pomelo::cleartable: [table_name] unknown table to clear" );
 }
 

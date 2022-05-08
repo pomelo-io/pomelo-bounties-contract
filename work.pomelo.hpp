@@ -77,12 +77,12 @@ public:
      * }
      * ```
      */
-    struct [[eosio::table("globals")]] globals_row {
+    struct [[eosio::table("configs")]] configs_row {
         uint64_t        fee = 500;
         name            login_contract = "login.eosn"_n;
         name            fee_account = "fee.pomelo"_n;
     };
-    typedef eosio::singleton< "globals"_n, globals_row > globals_table;
+    typedef eosio::singleton< "configs"_n, configs_row > configs_table;
 
     /**
      * ## TABLE `tokens`
@@ -493,8 +493,6 @@ public:
     void cleartable( const name table_name, const optional<name> scope, const optional<uint64_t> max_rows );
 
 private:
-    void transfer( const name from, const name to, const extended_asset value, const string memo );
-
     // getters
     extended_asset calculate_fee( const extended_asset ext_quantity );
     pomelo::globals_row get_globals();
@@ -507,29 +505,13 @@ private:
 
     // notifiers
     void deposit_bounty( const name bounty_id, const name from, const extended_asset ext_quantity, const string memo );
+    void save_transfer( const name bounty_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value );
 
-    // template <typename T>
-    // void donate_project(const T& table, const name project_id, const name from, const extended_asset ext_quantity, const string memo );
-
-    // void donate_grant(const name grant_id, const extended_asset ext_quantity, const name user_id, const double value);
-
-    // template <typename T>
-    // void set_project(T& table, const name project_type, const name project_id, const name author_id, const name funding_account, const set<symbol_code> accepted_tokens );
-
-    // void save_transfer( const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const name project_type, const name project_id, const double value );
-
-    // int get_index(const vector<name>& vec, name value);
-    // int get_index(const vector<contribution_t>& vec, name id);
-    // int get_index(const vector<uint16_t>& vec, uint16_t id);
-
-    // template <typename T>
-    // vector<T> remove_element(const vector<T>& vec, name id);
-
+    // utils
     template <typename T>
     void clear_table( T& table, uint64_t rows_to_clear );
-
-    // // update counters in status singleton
-    // void update_status( const uint32_t index, const uint32_t count );
-
-    // void update_social( const name user_id );
+    void transfer( const name from, const name to, const extended_asset value, const string memo );
+    checksum256 get_trx_id();
+    name parse_name(const string& str);
+    void update_status( const uint32_t index, const uint32_t count ); // update counters in status singleton
 };

@@ -43,7 +43,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name from, const extend
     const extended_asset fee = calculate_fee( ext_quantity );
     double value = calculate_value( ext_quantity - fee );
     print("\n", ext_quantity - fee, " == ", value);
-    transfer( get_self(), fee_account, fee, "🍈 Pomelo team");
+    transfer( get_self(), get_globals().fee_account, fee, "🍈 Pomelo team");
 
     // update bounty deposit
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
@@ -59,7 +59,7 @@ void pomelo::save_transfer( const name bounty_id, const name from, const name to
 {
     pomelo::transfers_table _transfers( get_self(), get_self().value );
     _transfers.emplace( get_self(), [&]( auto & row ) {
-        row.transfer_id = transfers.available_primary_key();
+        row.transfer_id = _transfers.available_primary_key();
         row.bounty_id = bounty_id;
         row.from = from;
         row.to = to;
