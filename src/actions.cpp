@@ -142,7 +142,7 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
 
     // validate input
     check( bounty.status == "open"_n, "pomelo::approve: [bounty.status] must be `open` to `approve`" );
-    check( bount.applicant_user_ids.find( applicant_user_id ) != bount.applicant_user_ids.end(), "pomelo::approve: [applicant_user_id] did not apply" );
+    check( bounty.applicant_user_ids.find( applicant_user_id ) != bounty.applicant_user_ids.end(), "pomelo::approve: [applicant_user_id] did not apply" );
 
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
@@ -168,7 +168,7 @@ void pomelo::release( const name bounty_id )
 
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
-        row.status = "done"_n;
+        row.status = "released"_n;
     });
 }
 
@@ -246,21 +246,21 @@ void pomelo::apply( const name bounty_id, const name user_id )
 [[eosio::action]]
 void pomelo::complete( const name bounty_id )
 {
-    // require auth by funder
-    eosn::login::require_auth_user_id( user_id, get_configs().login_contract );
-
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::apply: [bounty_id] does not exists" );
+
+    // require auth by funder
+    eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "started"_n, "pomelo::apply: [bounty.status] must be `started` to `complete`" );
 
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
-        row.status = "submitted";
+        row.status = "submitted"_n;
         row.updated_at = current_time_point();
-        row.completed_at = current_time_point();
+        row.submitted_at = current_time_point();
     });
 }
 
@@ -277,17 +277,28 @@ void pomelo::claim( const name bounty_id, const name receiver )
     // require auth by funder
     check( eosn::login::is_auth( bounty.approved_user_id, get_configs().login_contract ), "pomelo::claim: [receiver] must be linked with EOSN Login to [approved_user_id]" );
 
-    // validate input
-    check( bounty.status == "done"_n, "pomelo::claim: [bounty.status] must be `done` to `claim`" );
-    check( bounty.amount.quantity.amount > 0, "pomelo::claim: [amount] must be positive" );
+    // can only claim when released or submitted (after 72 hours)
+    check( bounty.status == "released"_n || bounty.status == "submitted"_n, "pomelo::claim: [bounty.status] must be `released` or `submitted` to `claim`" );
+
+    // bounty can be claimed after 72 hours of being submitted
+    const uint32_t sec_since_submitted = (current_time_point() - bounty.submitted_at).sec_since_epoch();
+    if ( sec_since_submitted < DAY * 3 ) {
+        check( bounty.status == "released"_n, "pomelo::claim: [bounty.status] must be `released` to `claim` or wait 72 hours" );
+    }
+
+    // calculate claimable amount
+    extended_asset claimable = bounty.amount;
+    claimable.quantity -= bounty.claimed;
+    check( claimable.quantity.amount > 0, "pomelo::claim: [claimable] already claimed" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, bounty.amount, "claim from [bounty_id=" + bounty_id.to_string() + "]" );
+    transfer(get_self(), receiver, claimable, "claimed [bounty_id=" + bounty_id.to_string() + "]" );
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
-        row.claimed = row.amount.quantity;
-        row.status = "claimed";
+        row.claimed += claimable.quantity;
+        row.status = "done"_n;
         row.updated_at = current_time_point();
+        row.completed_at = current_time_point();
     });
 }

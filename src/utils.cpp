@@ -12,7 +12,6 @@ checksum256 pomelo::get_trx_id()
 
 name pomelo::parse_name(const string& str)
 {
-
     if (str.length() == 0 || str.length() > 12) return {};
     int i=0;
     for (const auto c: str) {
@@ -44,7 +43,6 @@ void pomelo::update_status( const uint32_t index, const uint32_t count )
     status.last_updated = current_time_point();
     _status.set( status, get_self() );
 }
-
 
 void pomelo::transfer( const name from, const name to, const extended_asset value, const string memo )
 {

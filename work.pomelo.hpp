@@ -127,6 +127,7 @@ public:
      * - `{Metadata} metadata={}` - bounty metadata
      * - `{time_point_sec} created_at` - created at time
      * - `{time_point_sec} updated_at` - updated at time
+     * - `{time_point_sec} submitted_at` - submitted at time
      * - `{time_point_sec} completed_at` - completed at time
      *
      * ### example
@@ -145,6 +146,7 @@ public:
      *     "metadata": [{"key": "url", "value": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"}],
      *     "created_at": "2020-12-06T00:00:00",
      *     "updated_at": "2020-12-06T00:00:00",
+     *     "submitted_at": "1970-01-01T00:00:00",
      *     "completed_at": "1970-01-01T00:00:00"
      * }
      * ```
@@ -162,6 +164,7 @@ public:
         map<string, string>     metadata;
         time_point_sec          created_at;
         time_point_sec          updated_at;
+        time_point_sec          submitted_at;
         time_point_sec          completed_at;
 
         uint64_t primary_key() const { return bounty_id.value; }
