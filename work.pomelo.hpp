@@ -11,7 +11,7 @@ using namespace std;
 // static values
 static constexpr extended_symbol VALUE_SYM = { symbol {"USDT", 4}, "tethertether"_n };
 // static set<name> STATUS_TYPES = set<name>{"published"_n, "pending"_n, "retired"_n, "banned"_n, "denied"_n};
-static set<name> STATUS_TYPES = set<name>{"pending"_n,"open"_n,"started"_n,"submitted"_n,"done"_n};
+static set<name> STATUS_TYPES = set<name>{"pending"_n, "open"_n, "started"_n, "submitted"_n, "done"_n};
 static set<name> STATUS_DEPOSIT_TYPES = set<name>{"pending"_n, "open"_n, "started"_n};
 static constexpr uint32_t DAY = 86400;
 
@@ -119,8 +119,8 @@ public:
      * - `{name} bount_id` - (primary key) bounty ID (ex: "bounty1")
      * - `{name} funder_user_id` - funder (EOSN Login ID)
      * - `{extended_asset} amount` - amount of tokens to be released once bounty is completed
-     * - `{set<name>} applicants_user_ids` - list of applicants that have applied to bounty
-     * - `{set<name>} submissions_user_ids` - list of submissions that have been approved by bounty
+     * - `{set<name>} applicant_user_ids` - list of applicants that have applied to bounty
+     * - `{set<name>} approved_user_id` - approved account for bounty
      * - `{name} status="pending"` - status (`pending/open/started/submitted/done`)
      * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
      * - `{name} permissions="approval"` - bounty permissions (`approval` = "Funder must approve hunter to start work")
@@ -136,8 +136,9 @@ public:
      *     "bount_id": "bounty1",
      *     "funder_user_id": "funder.eosn",
      *     "amount": {"quantity": "10.0000 USDT", "contract": "tethertether"},
-     *     "applicants_user_ids": ["hunter.eosn"],
-     *     "submissions_user_ids": ["hunter.eosn"],
+     *     "claimed": "10.0000 USDT",
+     *     "applicant_user_ids": ["hunter.eosn"],
+     *     "approved_user_id": "hunter.eosn",
      *     "status": "pending",
      *     "type": "traditional",
      *     "permissions": "approval",
@@ -152,8 +153,9 @@ public:
         name                    bounty_id;
         name                    funder_user_id;
         extended_asset          amount;
-        set<name>               applicants_user_ids;
-        set<name>               submissions_user_ids;
+        asset                   claimed;
+        set<name>               applicant_user_ids;
+        name                    approved_user_id;
         name                    status = "pending"_n;
         name                    type = "traditional"_n;
         name                    permissions = "approval"_n;
@@ -333,16 +335,16 @@ public:
      * ### params
      *
      * - `{name} bounty_id` - bounty ID
-     * - `{set<name>} user_ids - approve selected accounts (EOSN Login ID)
+     * - `{name} applicant_user_id - approved applicant (EOSN Login ID)
      *
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo approve '[bounty1, [hunter.eosn]]' -p funder.eosn
+     * $ cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
-    void approve( const name bounty_id, const set<name> user_ids );
+    void approve( const name bounty_id, const name applicant_user_id );
 
     /**
      * ## ACTION `release`
@@ -398,15 +400,16 @@ public:
      * ### params
      *
      * - `{name} bounty_id` - bounty ID
+     * - `{name} receiver` - receiver account (must be linked to EOSN Login funder account)
      *
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo withdraw '[bounty1]' -p myaccount
+     * $ cleos push action work.pomelo withdraw '[bounty1, myaccount]' -p myaccount
      * ```
      */
     [[eosio::action]]
-    void withdraw( const name bounty_id );
+    void withdraw( const name bounty_id, const name receiver );
 
     /**
      * ## ACTION `apply`
@@ -461,6 +464,7 @@ public:
      * ### params
      *
      * - `{name} bounty_id` - bounty ID
+     * - `{name} receiver` - receiver account (must be linked to EOSN Login approved applicant)
      *
      * ### example
      *
@@ -469,7 +473,7 @@ public:
      * ```
      */
     [[eosio::action]]
-    void claim( const name bounty_id );
+    void claim( const name bounty_id, const name receiver );
 
     /**
      * ## TRANSFER NOTIFY HANDLER `on_transfer`

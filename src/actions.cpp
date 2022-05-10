@@ -60,8 +60,8 @@ void pomelo::createbounty( const name funder_user_id, const name bounty_id, cons
         row.bounty_id = bounty_id;
         row.funder_user_id = funder_user_id;
         row.amount = extended_asset{0, { token.sym, token.contract }};
-        row.applicants_user_ids = {};
-        row.submissions_user_ids = {};
+        row.applicant_user_ids = {};
+        row.approved_user_id = {};
         row.status = "pending"_n;
         row.type = "traditional"_n;
         row.permissions = "approval"_n;
@@ -129,44 +129,165 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
     else check(false, "pomelo::cleartable: [table_name] unknown table to clear" );
 }
 
+// @funder
 [[eosio::action]]
-void pomelo::approve( const name bounty_id, const set<name> user_ids )
+void pomelo::approve( const name bounty_id, const name applicant_user_id )
 {
-    check(false, "TO-DO");
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::approve: [bounty_id] does not exists" );
+
+    // require auth by funder
+    eosn::login::require_auth_user_id( bounty.funder_user_id, get_configs().login_contract );
+
+    // validate input
+    check( bounty.status == "open"_n, "pomelo::approve: [bounty.status] must be `open` to `approve`" );
+    check( bount.applicant_user_ids.find( applicant_user_id ) != bount.applicant_user_ids.end(), "pomelo::approve: [applicant_user_id] did not apply" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.approved_user_id = applicant_user_id;
+        row.status = "started"_n;
+        row.updated_at = current_time_point();
+    });
 }
 
+// @funder
 [[eosio::action]]
 void pomelo::release( const name bounty_id )
 {
-    check(false, "TO-DO");
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::release: [bounty_id] does not exists" );
+
+    // require auth by funder
+    eosn::login::require_auth_user_id( bounty.funder_user_id, get_configs().login_contract );
+
+    // validate input
+    check( bounty.status == "submitted"_n, "pomelo::release: [bounty.status] must be `submitted` to `release`" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.status = "done"_n;
+    });
 }
 
+// @funder
 [[eosio::action]]
 void pomelo::deny( const name bounty_id )
 {
-    check(false, "TO-DO");
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::approve: [bounty_id] does not exists" );
+
+    // require auth by funder
+    eosn::login::require_auth_user_id( bounty.funder_user_id, get_configs().login_contract );
+
+    // validate input
+    check( bounty.status == "submitted"_n, "pomelo::deny: [bounty.status] must be `submitted` to `deny`" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.status = "started"_n;
+        row.updated_at = current_time_point();
+    });
 }
 
+// @funder
 [[eosio::action]]
-void pomelo::withdraw( const name bounty_id )
+void pomelo::withdraw( const name bounty_id, const name receiver )
 {
-    check(false, "TO-DO");
+    require_auth( receiver );
+
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::withdraw: [bounty_id] does not exists" );
+
+    // require auth by funder
+    check( eosn::login::is_auth( bounty.funder_user_id, get_configs().login_contract ), "pomelo::withdraw: [receiver] must be linked with EOSN Login to [funder_user_id]" );
+
+    // validate input
+    check( bounty.status == "pending"_n, "pomelo::withdraw: [bounty.status] must be `pending` to `withdraw`" );
+    check( bounty.amount.quantity.amount > 0, "pomelo::withdraw: [amount] must be positive" );
+
+    // tranfer bounty funds to receiver
+    transfer(get_self(), receiver, bounty.amount, "withdraw from [bounty_id=" + bounty_id.to_string() + "]" );
+
+    // set bounty amount to zero
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.amount.quantity.amount = 0;
+        row.updated_at = current_time_point();
+    });
 }
 
+// @applicant
 [[eosio::action]]
 void pomelo::apply( const name bounty_id, const name user_id )
 {
-    check(false, "TO-DO");
+    // require auth by funder
+    eosn::login::require_auth_user_id( user_id, get_configs().login_contract );
+
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::apply: [bounty_id] does not exists" );
+
+    // validate input
+    check( bounty.status == "open"_n, "pomelo::apply: [bounty.status] must be `open` to `apply`" );
+    check( bounty.applicant_user_ids.find( user_id ) == bounty.applicant_user_ids.end(), "pomelo::apply: [user_id] is already applicant" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.applicant_user_ids.insert( user_id );
+        row.updated_at = current_time_point();
+    });
 }
 
+// @applicant
 [[eosio::action]]
 void pomelo::complete( const name bounty_id )
 {
-    check(false, "TO-DO");
+    // require auth by funder
+    eosn::login::require_auth_user_id( user_id, get_configs().login_contract );
+
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::apply: [bounty_id] does not exists" );
+
+    // validate input
+    check( bounty.status == "started"_n, "pomelo::apply: [bounty.status] must be `started` to `complete`" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.status = "submitted";
+        row.updated_at = current_time_point();
+        row.completed_at = current_time_point();
+    });
 }
 
+// @applicant
 [[eosio::action]]
-void pomelo::claim( const name bounty_id )
+void pomelo::claim( const name bounty_id, const name receiver )
 {
-    check(false, "TO-DO");
+    require_auth( receiver );
+
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::withdraw: [bounty_id] does not exists" );
+
+    // require auth by funder
+    check( eosn::login::is_auth( bounty.approved_user_id, get_configs().login_contract ), "pomelo::claim: [receiver] must be linked with EOSN Login to [approved_user_id]" );
+
+    // validate input
+    check( bounty.status == "done"_n, "pomelo::claim: [bounty.status] must be `done` to `claim`" );
+    check( bounty.amount.quantity.amount > 0, "pomelo::claim: [amount] must be positive" );
+
+    // tranfer bounty funds to receiver
+    transfer(get_self(), receiver, bounty.amount, "claim from [bounty_id=" + bounty_id.to_string() + "]" );
+
+    // set bounty amount to zero
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.claimed = row.amount.quantity;
+        row.status = "claimed";
+        row.updated_at = current_time_point();
+    });
 }
