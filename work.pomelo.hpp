@@ -22,15 +22,6 @@ public:
     using contract::contract;
 
     /**
-     * ## STRUCT `Metadata`
-     *
-     * - `{string} url` - URL for bounty
-     */
-    struct Metadata {
-        string      url;
-    };
-
-    /**
      * ## TABLE `status`
      *
      * ### params
@@ -66,6 +57,7 @@ public:
      * - `{uint64_t} fee` - platform fee (bips - 1/100 1%)
      * - `{name} login_contract` - EOSN Login contract
      * - `{name} fee_account` - fee
+     * - `{set<name>} metadata_keys` - list of keys allowed to include in bounty Metadata
      *
      * ### example
      *
@@ -74,6 +66,7 @@ public:
      *     "fee": 500,
      *     "login_contract": "login.eosn",
      *     "fee_account": "fee.pomelo",
+     *     "metadata_keys": ["url"]
      * }
      * ```
      */
@@ -81,6 +74,7 @@ public:
         uint64_t        fee = 500;
         name            login_contract = "login.eosn"_n;
         name            fee_account = "fee.pomelo"_n;
+        set<name>       metadata_keys = {"url"_n};
     };
     typedef eosio::singleton< "configs"_n, configs_row > configs_table;
 
@@ -123,12 +117,13 @@ public:
      * ## params
      *
      * - `{name} bount_id` - (primary key) bounty ID (ex: "bounty1")
-     * - `{name} author_user_id` - author (EOSN Login ID)
+     * - `{name} funder_user_id` - funder (EOSN Login ID)
      * - `{extended_asset} amount` - amount of tokens to be released once bounty is completed
-     * - `{set<name>} hunters` - list of hunters that have applied or approved
+     * - `{set<name>} applicants_user_ids` - list of applicants that have applied to bounty
+     * - `{set<name>} submissions_user_ids` - list of submissions that have been approved by bounty
      * - `{name} status="pending"` - status (`pending/open/started/submitted/done`)
      * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
-     * - `{name} permissions="approval"` - bounty permissions (`approval` = "Author must approve hunter to start work")
+     * - `{name} permissions="approval"` - bounty permissions (`approval` = "Funder must approve hunter to start work")
      * - `{Metadata} metadata={}` - bounty metadata
      * - `{time_point_sec} created_at` - created at time
      * - `{time_point_sec} updated_at` - updated at time
@@ -139,13 +134,14 @@ public:
      * ```json
      * {
      *     "bount_id": "bounty1",
-     *     "author_user_id": "author.eosn",
+     *     "funder_user_id": "funder.eosn",
      *     "amount": {"quantity": "10.0000 USDT", "contract": "tethertether"},
-     *     "hunters": ["hunter.eosn"],
+     *     "applicants_user_ids": ["hunter.eosn"],
+     *     "submissions_user_ids": ["hunter.eosn"],
      *     "status": "pending",
      *     "type": "traditional",
      *     "permissions": "approval",
-     *     "metadata": {"url": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"},
+     *     "metadata": [{"key": "url", "value": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"}],
      *     "created_at": "2020-12-06T00:00:00",
      *     "updated_at": "2020-12-06T00:00:00",
      *     "completed_at": "1970-01-01T00:00:00"
@@ -154,13 +150,14 @@ public:
      */
     struct [[eosio::table]] bounties_row {
         name                    bounty_id;
-        name                    author_user_id;
+        name                    funder_user_id;
         extended_asset          amount;
-        set<name>               hunters;
+        set<name>               applicants_user_ids;
+        set<name>               submissions_user_ids;
         name                    status = "pending"_n;
         name                    type = "traditional"_n;
         name                    permissions = "approval"_n;
-        Metadata                metadata;
+        map<string, string>     metadata;
         time_point_sec          created_at;
         time_point_sec          updated_at;
         time_point_sec          completed_at;
@@ -286,24 +283,24 @@ public:
     /**
      * ## ACTION `createbounty`
      *
-     * - **authority**: `author_user_id`
+     * - **authority**: `funder_user_id`
      *
      * Create bounty
      *
      * ### params
      *
-     * - `{name} author_user_id` - author (EOSN Login ID)
+     * - `{name} funder_user_id` - funder (EOSN Login ID)
      * - `{name} bount_id` - bounty ID
      * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
      *
      * ### Example
      *
      * ```bash
-     * $ cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT"]' -p author.eosn
+     * $ cleos push action work.pomelo createbounty '[funder.eosn, bounty1, "USDT"]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
-    void createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token );
+    void createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token );
 
     /**
      * ## ACTION `setstate`
@@ -329,7 +326,7 @@ public:
     /**
      * ## ACTION `approve`
      *
-     * - **authority**: `author_user_id`
+     * - **authority**: `funder_user_id`
      *
      * Author select hunter for bounty
      *
@@ -341,7 +338,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo approve '[bounty1, [hunter.eosn]]' -p author.eosn
+     * $ cleos push action work.pomelo approve '[bounty1, [hunter.eosn]]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
@@ -350,7 +347,7 @@ public:
     /**
      * ## ACTION `release`
      *
-     * - **authority**: `author_user_id`
+     * - **authority**: `funder_user_id`
      *
      * Author releases funds to hunter when bounty is completed
      *
@@ -363,7 +360,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo release '[bounty1]' -p author.eosn
+     * $ cleos push action work.pomelo release '[bounty1]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
@@ -372,7 +369,7 @@ public:
     /**
      * ## ACTION `deny`
      *
-     * - **authority**: `author_user_id`
+     * - **authority**: `funder_user_id`
      *
      * Author denies completed bounty
      *
@@ -385,7 +382,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo deny '[bounty1]' -p author.eosn
+     * $ cleos push action work.pomelo deny '[bounty1]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
@@ -495,9 +492,10 @@ public:
 private:
     // getters
     extended_asset calculate_fee( const extended_asset ext_quantity );
-    pomelo::globals_row get_globals();
+    pomelo::configs_row get_configs();
     pomelo::tokens_row get_token( const extended_symbol ext_sym );
     pomelo::tokens_row get_token( const extended_asset ext_quantity );
+    pomelo::tokens_row get_token( const symbol_code symcode );
     bool is_token_enabled( const symbol_code symcode );
     double calculate_value( const extended_asset ext_quantity );
     name get_user_id( const name account );

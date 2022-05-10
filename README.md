@@ -98,7 +98,7 @@ $ ./test.sh
 |---------------|-------------------------------|
 | Backend       | Pomelo Backend                |
 | Admin         | Pomelo Admins                 |
-| Owners        | Grant/Bounty Owners           |
+| Funders       | Bounty Funders                |
 | SC            | Smart Contract                |
 
 ## Table of Content

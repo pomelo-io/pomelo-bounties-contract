@@ -14,83 +14,11 @@ summary: Set config parameter
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
 
-<h1 class="contract">setseason</h1>
----
-spec_version: "0.2.0"
-title: init
-summary: Set season parameters
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">setproject</h1>
----
-spec_version: "0.2.0"
-title: setproject
-summary: Set project (grant/bounty)
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">setgrant</h1>
----
-spec_version: "0.2.0"
-title: setproject
-summary: Set grant
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
 <h1 class="contract">setstate</h1>
 ---
 spec_version: "0.2.0"
 title: setstate
 summary: Set project state
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">setround</h1>
----
-spec_version: "0.2.0"
-title: setround
-summary: Set round
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">joinround</h1>
----
-spec_version: "0.2.0"
-title: joinround
-summary: Join round
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">unjoinround</h1>
----
-spec_version: "0.2.0"
-title: unjoinround
-summary: Exclude grant from round
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">startround</h1>
----
-spec_version: "0.2.0"
-title: startround
-summary: Start round
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">removeuser</h1>
----
-spec_version: "0.2.0"
-title: removeuser
-summary: Remove user
-icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
----
-
-<h1 class="contract">collapse</h1>
----
-spec_version: "0.2.0"
-title: collapse
-summary: Collapse users and their donations
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
 
@@ -118,18 +46,75 @@ summary: Delete token
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
 
-<h1 class="contract">setfunding</h1>
+<h1 class="contract">deltoken</h1>
 ---
 spec_version: "0.2.0"
-title: setfunding
-summary: Set funding account
+title: deltoken
+summary: Delete token
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
 
-<h1 class="contract">setgrantid</h1>
+
+<h1 class="contract">createbounty</h1>
 ---
 spec_version: "0.2.0"
-title: setgrantid
-summary: Set grant ID
+title: createbounty
+summary: Create Bounty
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">approve</h1>
+---
+spec_version: "0.2.0"
+title: approve
+summary: Approve
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">release</h1>
+---
+spec_version: "0.2.0"
+title: release
+summary: Release
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">deny</h1>
+---
+spec_version: "0.2.0"
+title: deny
+summary: Deny
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">withdraw</h1>
+---
+spec_version: "0.2.0"
+title: withdraw
+summary: Withdraw
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">apply</h1>
+---
+spec_version: "0.2.0"
+title: apply
+summary: Apply
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">complete</h1>
+---
+spec_version: "0.2.0"
+title: complete
+summary: Complete
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">claim</h1>
+---
+spec_version: "0.2.0"
+title: claim
+summary: Claim
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---

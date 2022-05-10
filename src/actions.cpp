@@ -43,24 +43,25 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @user
 [[eosio::action]]
-void pomelo::createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token )
+void pomelo::createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token )
 {
-    eosn::login::require_auth_user_id( author_user_id, get_globals().login_contract );
+    eosn::login::require_auth_user_id( funder_user_id, get_configs().login_contract );
 
     // tables
     pomelo::bounties_table _bounties( get_self(), get_self().value );
 
     // validate input
-    const auto itr = _bounties.find( project_id.value );
-    check( itr.find(bounty_id.value) == grants.end(), "pomelo::createbounty: [bounty_id] already exists" );
-    check( is_token_enabled( accepted_token ), "pomelo::createbounty: [accepted_token] is not available" );
+    const auto itr = _bounties.find( bounty_id.value );
+    check( itr == _bounties.end(), "pomelo::createbounty: [bounty_id] already exists" );
+    auto token = get_token( accepted_token );
 
     // create bounty
     _bounties.emplace( get_self(), [&]( auto & row ) {
         row.bounty_id = bounty_id;
-        row.author_user_id = author_user_id;
-        row.amount = extended_asset{0, accepted_token};
-        row.hunters = hunters;
+        row.funder_user_id = funder_user_id;
+        row.amount = extended_asset{0, { token.sym, token.contract }};
+        row.applicants_user_ids = {};
+        row.submissions_user_ids = {};
         row.status = "pending"_n;
         row.type = "traditional"_n;
         row.permissions = "approval"_n;
@@ -96,13 +97,13 @@ void pomelo::setconfig( const optional<uint64_t> fee, const optional<name> login
 {
     require_auth( get_self() );
 
-    pomelo::globals_table _globals( get_self(), get_self().value );
-    auto globals = _globals.get_or_default();
+    pomelo::configs_table _configs( get_self(), get_self().value );
+    auto configs = _configs.get_or_default();
 
-    if ( fee ) globals.fee = *fee;
-    if ( login_contract ) globals.login_contract = *login_contract;
-    if ( fee_account ) globals.fee_account = *fee_account;
-    _globals.set( globals, get_self() );
+    if ( fee ) configs.fee = *fee;
+    if ( login_contract ) configs.login_contract = *login_contract;
+    if ( fee_account ) configs.fee_account = *fee_account;
+    _configs.set( configs, get_self() );
 }
 
 // @admin
@@ -111,14 +112,14 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
 {
     require_auth( get_self() );
     const uint64_t rows_to_clear = *max_rows == 0 ? -1 : *max_rows;
-    const uint64_t scope = scope ? scope->value : get_self().value;
+    const uint64_t value = scope ? scope->value : get_self().value;
 
     // tables
-    pomelo::transfers_table _transfers( get_self(), scope );
-    pomelo::bounties_table _bounties( get_self(), scope );
-    pomelo::configs_table _configs( get_self(), scope );
-    pomelo::tokens_table _tokens( get_self(), scope );
-    pomelo::status_table _status( get_self(), scope );
+    pomelo::transfers_table _transfers( get_self(), value );
+    pomelo::bounties_table _bounties( get_self(), value );
+    pomelo::configs_table _configs( get_self(), value );
+    pomelo::tokens_table _tokens( get_self(), value );
+    pomelo::status_table _status( get_self(), value );
 
     if (table_name == "transfers"_n) clear_table( _transfers, rows_to_clear );
     else if (table_name == "bounties"_n) clear_table( _bounties, rows_to_clear );
@@ -129,43 +130,43 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
 }
 
 [[eosio::action]]
-void approve( const name bounty_id, const set<name> user_ids )
+void pomelo::approve( const name bounty_id, const set<name> user_ids )
 {
     check(false, "TO-DO");
 }
 
 [[eosio::action]]
-void release( const name bounty_id )
+void pomelo::release( const name bounty_id )
 {
     check(false, "TO-DO");
 }
 
 [[eosio::action]]
-void deny( const name bounty_id )
+void pomelo::deny( const name bounty_id )
 {
     check(false, "TO-DO");
 }
 
 [[eosio::action]]
-void withdraw( const name bounty_id )
+void pomelo::withdraw( const name bounty_id )
 {
     check(false, "TO-DO");
 }
 
 [[eosio::action]]
-void apply( const name bounty_id, const name user_id )
+void pomelo::apply( const name bounty_id, const name user_id )
 {
     check(false, "TO-DO");
 }
 
 [[eosio::action]]
-void complete( const name bounty_id )
+void pomelo::complete( const name bounty_id )
 {
     check(false, "TO-DO");
 }
 
 [[eosio::action]]
-void claim( const name bounty_id )
+void pomelo::claim( const name bounty_id )
 {
     check(false, "TO-DO");
 }
