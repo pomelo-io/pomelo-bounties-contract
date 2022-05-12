@@ -50,10 +50,11 @@ public:
     typedef eosio::singleton< "status"_n, status_row > status_table;
 
     /**
-     * ## TABLE `globals`
+     * ## TABLE `configs`
      *
      * ### params
      *
+     * - `{name} status` - contract status ("ok", "testing", "maintenance")
      * - `{uint64_t} fee` - platform fee (bips - 1/100 1%)
      * - `{name} login_contract` - EOSN Login contract
      * - `{name} fee_account` - fee
@@ -63,6 +64,7 @@ public:
      *
      * ```json
      * {
+     *     "status": "ok",
      *     "fee": 500,
      *     "login_contract": "login.eosn",
      *     "fee_account": "fee.pomelo",
@@ -71,6 +73,7 @@ public:
      * ```
      */
     struct [[eosio::table("configs")]] configs_row {
+        name            status = "testing"_n;
         uint64_t        fee = 500;
         name            login_contract = "login.eosn"_n;
         name            fee_account = "fee.pomelo"_n;
