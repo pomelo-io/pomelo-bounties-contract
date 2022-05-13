@@ -19,6 +19,8 @@ void pomelo::on_transfer( const name from, const name to, const asset quantity, 
 
 void pomelo::deposit_bounty( const name bounty_id, const name user_id, const name from, const extended_asset ext_quantity, const string memo )
 {
+    const auto fee_account = get_configs().fee_account;
+
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     auto & bounty = _bounties.get(bounty_id.value, "pomelo::deposit_bounty: [bounty_id] does not exists");
 
@@ -44,7 +46,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
     const extended_asset fee = calculate_fee( ext_quantity );
     double value = calculate_value( ext_quantity - fee );
     print("\n", ext_quantity - fee, " == ", value);
-    transfer( get_self(), get_configs().fee_account, fee, "🍈 Pomelo team");
+    transfer( get_self(), fee_account, fee, "🍈 Pomelo team");
 
     // update bounty deposit
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {

@@ -1,10 +1,10 @@
 #!/usr/bin/env bats
 
 @test "uninitialized contract" {
-  run cleos transfer user1 work.pomelo "1000.0000 EOS" "grant:grant1"
+  run cleos transfer funder1 work.pomelo "1000.0000 EOS" "bounty"
   echo "Output: $output"
   [ $status -eq 1 ]
-  [[ "$output" =~ "pomelo::on_transfer: contract is under maintenance" ]] || false
+  [[ "$output" =~ "contract is under maintenance" ]] || false
 }
 
 @test "init globals" {
@@ -13,13 +13,13 @@
   echo "Output: $output"
   [ $status -eq 0 ]
 
-  result=$(cleos get table work.pomelo work.pomelo globals | jq -r '.rows[0].season_id')
-  [ $result = "0" ]
+  result=$(cleos get table work.pomelo work.pomelo configs | jq -r '.rows[0].fee')
+  [ $result = "500" ]
 }
 
 @test "set token" {
 
-  run cleos push action work.pomelo token '["4,EOS", "eosio.token", 10000, 1]' -p work.pomelo
+  run cleos push action work.pomelo token '["4,EOS", "eosio.token", 20000, 1]' -p work.pomelo
   echo "Output: $output"
   [ $status -eq 0 ]
 
@@ -27,11 +27,7 @@
   echo "Output: $output"
   [ $status -eq 0 ]
 
-  run cleos push action work.pomelo token '["4,PLAY", "play.pomelo", 10000, 1]' -p work.pomelo
-  echo "Output: $output"
-  [ $status -eq 0 ]
-
   result=$(cleos get table work.pomelo work.pomelo tokens | jq -r '.rows | length')
-  [ $result = "3" ]
+  [ $result = "2" ]
 
 }
