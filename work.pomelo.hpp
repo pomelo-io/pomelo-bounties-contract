@@ -121,7 +121,8 @@ public:
      * ## params
      *
      * - `{name} bount_id` - (primary key) bounty ID (ex: "bounty1")
-     * - `{name} funder_user_id` - funder (EOSN Login ID)
+     * - `{name} author_user_id` - author (EOSN Login ID)
+     * - `{map<name, asset>} funders` - funders contributions map (EOSN Login id => amount)
      * - `{extended_asset} amount` - amount of tokens to be released once bounty is completed
      * - `{set<name>} applicant_user_ids` - list of applicants that have applied to bounty
      * - `{set<name>} approved_user_id` - approved account for bounty
@@ -139,7 +140,8 @@ public:
      * ```json
      * {
      *     "bount_id": "bounty1",
-     *     "funder_user_id": "funder.eosn",
+     *     "author_user_id": "author.eosn",
+     *     "funders": {"funder1.eosn": "5.0000 USDT", "funder2.eosn": "5.0000 USDT"}
      *     "amount": {"quantity": "10.0000 USDT", "contract": "tethertether"},
      *     "claimed": "10.0000 USDT",
      *     "applicant_user_ids": ["hunter.eosn"],
@@ -157,7 +159,8 @@ public:
      */
     struct [[eosio::table]] bounties_row {
         name                    bounty_id;
-        name                    funder_user_id;
+        name                    author_user_id;
+        map<name, asset>        funders;
         extended_asset          amount;
         asset                   claimed;
         set<name>               applicant_user_ids;
@@ -292,13 +295,13 @@ public:
     /**
      * ## ACTION `createbounty`
      *
-     * - **authority**: `funder_user_id`
+     * - **authority**: `author_user_id`
      *
      * Create bounty
      *
      * ### params
      *
-     * - `{name} funder_user_id` - funder (EOSN Login ID)
+     * - `{name} author_user_id` - author (EOSN Login ID)
      * - `{name} bount_id` - bounty ID
      * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
      * - `{optional<name>} bounty_type` - bounty type (default = traditional)
@@ -306,11 +309,11 @@ public:
      * ### Example
      *
      * ```bash
-     * $ cleos push action work.pomelo createbounty '[funder.eosn, bounty1, "USDT", null]' -p funder.eosn
+     * $ cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT", null]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
-    void createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type );
+    void createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type );
 
     /**
      * ## ACTION `setstate`
@@ -336,7 +339,7 @@ public:
     /**
      * ## ACTION `approve`
      *
-     * - **authority**: `funder_user_id`
+     * - **authority**: bounty `author_user_id`
      *
      * Author select hunter for bounty
      *

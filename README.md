@@ -13,7 +13,7 @@
 cleos push action login.eosn link '["author.eosn", "myaccount", "SIG_K1_KjnbJ2m22HtuRW7u7ZLdoCx76aNMiADHJpATGh32uYeJLdSjhdpHA7tmd4pj1Ni3mSr5DPRHHaydpaggrb5RcBg2HDDn7G"]' -p myaccount
 
 # create bounty
-cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT"]' -p author.eosn
+cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT", null]' -p author.eosn
 
 # fund bounty
 cleos transfer myaccount work.pomelo "100.0000 USDT" "bounty1" --contract tethertether
@@ -98,6 +98,7 @@ $ ./test.sh
 |---------------|-------------------------------|
 | Backend       | Pomelo Backend                |
 | Admin         | Pomelo Admins                 |
+| Author        | Bounty Author                |
 | Funders       | Bounty Funders                |
 | SC            | Smart Contract                |
 

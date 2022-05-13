@@ -44,9 +44,9 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @user
 [[eosio::action]]
-void pomelo::createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
+void pomelo::createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
 {
-    eosn::login::require_auth_user_id( funder_user_id, get_configs().login_contract );
+    eosn::login::require_auth_user_id( author_user_id, get_configs().login_contract );
 
     const auto type = bounty_type ? *bounty_type : "traditional"_n;
     check( BOUNTY_TYPES.count(type), "pomelo::createbounty: unknown [bounty_type]" );
@@ -61,7 +61,8 @@ void pomelo::createbounty( const name funder_user_id, const name bounty_id, cons
     // create bounty
     _bounties.emplace( get_self(), [&]( auto & row ) {
         row.bounty_id = bounty_id;
-        row.funder_user_id = funder_user_id;
+        row.author_user_id = author_user_id;
+        row.funders = {};
         row.amount = extended_asset{0, { token.sym, token.contract }};
         row.claimed = asset{0, token.sym};
         row.applicant_user_ids = {};
@@ -133,7 +134,7 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
     else check(false, "pomelo::cleartable: [table_name] unknown table to clear" );
 }
 
-// @funder
+// @author
 [[eosio::action]]
 void pomelo::approve( const name bounty_id, const name applicant_user_id )
 {
@@ -141,8 +142,8 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::approve: [bounty_id] does not exists" );
 
-    // require auth by funder
-    eosn::login::require_auth_user_id( bounty.funder_user_id, get_configs().login_contract );
+    // require auth by author
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "open"_n, "pomelo::approve: [bounty.status] must be `open` to `approve`" );
@@ -156,7 +157,7 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
     });
 }
 
-// @funder
+// @author
 [[eosio::action]]
 void pomelo::release( const name bounty_id )
 {
@@ -164,8 +165,8 @@ void pomelo::release( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::release: [bounty_id] does not exists" );
 
-    // require auth by funder
-    eosn::login::require_auth_user_id( bounty.funder_user_id, get_configs().login_contract );
+    // require auth by author
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "submitted"_n, "pomelo::release: [bounty.status] must be `submitted` to `release`" );
@@ -176,7 +177,7 @@ void pomelo::release( const name bounty_id )
     });
 }
 
-// @funder
+// @author
 [[eosio::action]]
 void pomelo::deny( const name bounty_id )
 {
@@ -184,8 +185,8 @@ void pomelo::deny( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::approve: [bounty_id] does not exists" );
 
-    // require auth by funder
-    eosn::login::require_auth_user_id( bounty.funder_user_id, get_configs().login_contract );
+    // require auth by author
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "submitted"_n, "pomelo::deny: [bounty.status] must be `submitted` to `deny`" );
@@ -197,7 +198,7 @@ void pomelo::deny( const name bounty_id )
     });
 }
 
-// @funder
+// @author
 [[eosio::action]]
 void pomelo::withdraw( const name bounty_id, const name receiver )
 {
@@ -207,8 +208,8 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::withdraw: [bounty_id] does not exists" );
 
-    // require auth by funder
-    check( eosn::login::is_auth( bounty.funder_user_id, get_configs().login_contract ), "pomelo::withdraw: [receiver] must be linked with EOSN Login to [funder_user_id]" );
+    // require auth by author
+    check( eosn::login::is_auth( bounty.author_user_id, get_configs().login_contract ), "pomelo::withdraw: [receiver] must be linked with EOSN Login to [author_user_id]" );
 
     // validate input
     check( bounty.status == "pending"_n, "pomelo::withdraw: [bounty.status] must be `pending` to `withdraw`" );
@@ -228,7 +229,7 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
 [[eosio::action]]
 void pomelo::apply( const name bounty_id, const name user_id )
 {
-    // require auth by funder
+    // require auth by applicant
     eosn::login::require_auth_user_id( user_id, get_configs().login_contract );
 
     // get bounty
@@ -254,7 +255,7 @@ void pomelo::complete( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::apply: [bounty_id] does not exists" );
 
-    // require auth by funder
+    // require auth by applicant
     eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
 
     // validate input
@@ -278,7 +279,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::withdraw: [bounty_id] does not exists" );
 
-    // require auth by funder
+    // require auth by applicant
     check( eosn::login::is_auth( bounty.approved_user_id, get_configs().login_contract ), "pomelo::claim: [receiver] must be linked with EOSN Login to [approved_user_id]" );
 
     // can only claim when released or submitted (after 72 hours)
