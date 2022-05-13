@@ -281,7 +281,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
     check( bounty.status == "released"_n || bounty.status == "submitted"_n, "pomelo::claim: [bounty.status] must be `released` or `submitted` to `claim`" );
 
     // bounty can be claimed after 72 hours of being submitted
-    const uint32_t sec_since_submitted = (current_time_point() - bounty.submitted_at).sec_since_epoch();
+    const uint32_t sec_since_submitted = current_time_point().sec_since_epoch() - bounty.submitted_at.sec_since_epoch();
     if ( sec_since_submitted < DAY * 3 ) {
         check( bounty.status == "released"_n, "pomelo::claim: [bounty.status] must be `released` to `claim` or wait 72 hours" );
     }
