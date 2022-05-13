@@ -1,4 +1,5 @@
 #include <oracle.defi/oracle.defi.hpp>
+#include <sx.utils/utils.hpp>
 
 // @admin
 [[eosio::action]]
@@ -60,6 +61,7 @@ void pomelo::createbounty( const name funder_user_id, const name bounty_id, cons
         row.bounty_id = bounty_id;
         row.funder_user_id = funder_user_id;
         row.amount = extended_asset{0, { token.sym, token.contract }};
+        row.claimed = asset{0, token.sym};
         row.applicant_user_ids = {};
         row.approved_user_id = {};
         row.status = "pending"_n;
@@ -290,6 +292,9 @@ void pomelo::claim( const name bounty_id, const name receiver )
     extended_asset claimable = bounty.amount;
     claimable.quantity -= bounty.claimed;
     check( claimable.quantity.amount > 0, "pomelo::claim: [claimable] already claimed" );
+
+    const auto balance = sx::utils::get_balance(claimable.get_extended_symbol(), get_self()).quantity;
+    check( balance >= claimable.quantity, "pomelo::claim: not enough balance to claim" );
 
     // tranfer bounty funds to receiver
     transfer(get_self(), receiver, claimable, "claimed [bounty_id=" + bounty_id.to_string() + "]" );
