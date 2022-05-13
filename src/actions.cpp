@@ -44,10 +44,12 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @user
 [[eosio::action]]
-void pomelo::createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token )
+void pomelo::createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
 {
     eosn::login::require_auth_user_id( funder_user_id, get_configs().login_contract );
 
+    const auto type = bounty_type ? *bounty_type : "traditional"_n;
+    check( BOUNTY_TYPES.count(type), "pomelo::createbounty: unknown [bounty_type]" );
     // tables
     pomelo::bounties_table _bounties( get_self(), get_self().value );
 
@@ -65,7 +67,7 @@ void pomelo::createbounty( const name funder_user_id, const name bounty_id, cons
         row.applicant_user_ids = {};
         row.approved_user_id = {};
         row.status = "pending"_n;
-        row.type = "traditional"_n;
+        row.type = type;
         row.permissions = "approval"_n;
         row.created_at = current_time_point();
         row.updated_at = current_time_point();

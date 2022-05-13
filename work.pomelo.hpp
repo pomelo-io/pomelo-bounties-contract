@@ -11,11 +11,12 @@ using namespace std;
 // static values
 static constexpr extended_symbol VALUE_SYM = { symbol {"USDT", 4}, "tethertether"_n };
 // static set<name> STATUS_TYPES = set<name>{"published"_n, "pending"_n, "retired"_n, "banned"_n, "denied"_n};
-static set<name> STATUS_TYPES = set<name>{"pending"_n, "open"_n, "started"_n, "submitted"_n, "done"_n};
-static set<name> STATUS_DEPOSIT_TYPES = set<name>{"pending"_n, "open"_n, "started"_n};
+static const set<name> STATUS_TYPES = set<name>{"pending"_n, "open"_n, "started"_n, "submitted"_n, "done"_n};
+static const set<name> STATUS_DEPOSIT_TYPES = set<name>{"pending"_n, "open"_n, "started"_n};
+static const set<name> BOUNTY_TYPES = set<name>{"traditional"_n};
 static constexpr uint32_t DAY = 86400;
 
-static string ERROR_INVALID_MEMO = "invalid transfer memo (ex: \"eosio.grants:123\")";
+static const string ERROR_INVALID_MEMO = "invalid transfer memo (ex: \"eosio.grants:123\")";
 
 class [[eosio::contract("work.pomelo")]] pomelo : public eosio::contract {
 public:
@@ -300,15 +301,16 @@ public:
      * - `{name} funder_user_id` - funder (EOSN Login ID)
      * - `{name} bount_id` - bounty ID
      * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
+     * - `{optional<name>} bounty_type` - bounty type (default = traditional)
      *
      * ### Example
      *
      * ```bash
-     * $ cleos push action work.pomelo createbounty '[funder.eosn, bounty1, "USDT"]' -p funder.eosn
+     * $ cleos push action work.pomelo createbounty '[funder.eosn, bounty1, "USDT", null]' -p funder.eosn
      * ```
      */
     [[eosio::action]]
-    void createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token );
+    void createbounty( const name funder_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type );
 
     /**
      * ## ACTION `setstate`
