@@ -16,7 +16,7 @@ cleos push action login.eosn link '["author.eosn", "myaccount", "SIG_K1_KjnbJ2m2
 cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT", null]' -p author.eosn
 
 # fund bounty
-cleos transfer myaccount work.pomelo "100.0000 USDT" "bounty1" --contract tethertether
+cleos transfer myaccount work.pomelo "100.0000 USDT" "bounty1,funder.eosn" --contract tethertether
 
 # make bounty public
 cleos push action work.pomelo setstate '[bounty1, published]' -p work.pomelo
