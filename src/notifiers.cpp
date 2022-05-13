@@ -37,7 +37,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name from, const extend
     check( is_token_enabled( symcode ), "pomelo::deposit_bounty: [token=" + symcode.to_string() + "] is not supported");
 
     // require EOSN linked login to allow withdrawals
-    check( is_user(bounty.funder_user_id), "pomelo::deposit_bounty: [funder_user_id] must be linked to EOSN Login");
+    check( is_user(bounty.author_user_id), "pomelo::deposit_bounty: [author_user_id] must be linked to EOSN Login");
 
     // calculate fee
     const extended_asset fee = calculate_fee( ext_quantity );
