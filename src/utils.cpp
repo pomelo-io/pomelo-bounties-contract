@@ -1,5 +1,6 @@
 #include <eosio/transaction.hpp>
 #include <eosio/crypto.hpp>
+#include <sx.utils/utils.hpp>
 
 checksum256 pomelo::get_trx_id()
 {
@@ -10,18 +11,15 @@ checksum256 pomelo::get_trx_id()
     return sha256( buf, read );
 }
 
-name pomelo::parse_name(const string& str)
+
+pair<name, name> pomelo::parse_memo(const string& memo)
 {
-    if (str.length() == 0 || str.length() > 12) return {};
-    int i=0;
-    for (const auto c: str) {
-        if ((c >= 'a' && c <= 'z') || ( c >= '0' && c <= '5') || c == '.') {
-            if (i == str.length() - 1 && c == '.') return {};                  //can't end with a .
-        }
-        else return {};
-        i++;
-    }
-    return name{str};
+    if (memo.length() == 0) return {};
+    auto parts = sx::utils::split(memo, ",");
+    if (parts.size() > 2) return {};
+    name bounty = sx::utils::parse_name(parts[0]);
+    name user_id = parts.size() == 2 ? sx::utils::parse_name(parts[1]) : name{};
+    return { bounty, user_id };
 }
 
 template <typename T>

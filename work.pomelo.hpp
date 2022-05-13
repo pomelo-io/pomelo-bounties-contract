@@ -16,7 +16,7 @@ static const set<name> STATUS_DEPOSIT_TYPES = set<name>{"pending"_n, "open"_n, "
 static const set<name> BOUNTY_TYPES = set<name>{"traditional"_n};
 static constexpr uint32_t DAY = 86400;
 
-static const string ERROR_INVALID_MEMO = "invalid transfer memo (ex: \"eosio.grants:123\")";
+static const string ERROR_INVALID_MEMO = "invalid transfer memo (ex: \"mybounty[,author.eosn]\")";
 
 class [[eosio::contract("work.pomelo")]] pomelo : public eosio::contract {
 public:
@@ -202,6 +202,7 @@ public:
      * {
      *     "transfer_id": 10001,
      *     "bounty_id": 123,
+     *     "funder_user_id": "funder.eosn"_n,
      *     "from": "myaccount",
      *     "to": "work.pomelo",
      *     "ext_quantity": {"contract": "eosio.token", "quantity": "15.0000 EOS"},
@@ -216,6 +217,7 @@ public:
     struct [[eosio::table]] transfers_row {
         uint64_t                transfer_id;
         name                    bounty_id;
+        name                    funder_user_id;
         name                    from;
         name                    to;
         extended_asset          ext_quantity;
@@ -517,14 +519,14 @@ private:
     bool is_user( const name user_id );
 
     // notifiers
-    void deposit_bounty( const name bounty_id, const name from, const extended_asset ext_quantity, const string memo );
-    void save_transfer( const name bounty_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value );
+    void deposit_bounty( const name bounty_id, const name user_id, const name from, const extended_asset ext_quantity, const string memo );
+    void save_transfer( const name bounty_id, const name funder_user_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value );
 
     // utils
     template <typename T>
     void clear_table( T& table, uint64_t rows_to_clear );
     void transfer( const name from, const name to, const extended_asset value, const string memo );
     checksum256 get_trx_id();
-    name parse_name(const string& str);
+    pair<name, name> parse_memo(const string& memo);
     void update_status( const uint32_t index, const uint32_t count ); // update counters in status singleton
 };
