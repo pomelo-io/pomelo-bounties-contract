@@ -163,10 +163,80 @@
   [ $result = "3" ]
 }
 
-# @test "apply for non-existing bounty" {
-#   run cleos push action work.pomelo apply '[badbounty, hunter1.eosn]' -p hunter1.eosn
-#   echo "Output: $output"
-#   [ $status -eq 1 ]
-#   [[ "$output" =~ "[bounty_id] does not exists" ]] || false
-# }
+@test "apply for bounty in wrong state" {
+  run cleos push action work.pomelo apply '[bounty1, hunter1.eosn]' -p hunter1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
 
+@test "change state to open" {
+  run cleos push action work.pomelo setstate '[bounty1, open]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "open" ]
+}
+
+@test "fund bounty in open state" {
+  run cleos transfer funder1 work.pomelo "3.0000 EOS" "bounty1"
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
+  [ "$result" = "12.3500 EOS 0.6500 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
+  [ "$result" = "author1.eosn 5.0000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders | length')
+  [ $result = "2" ]
+  result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
+  [ $result = "4" ]
+}
+
+@test "apply for bounty with non-existing eosn user" {
+  run cleos push action work.pomelo apply '[bounty1, user.noeosn]' -p user.noeosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[user_id] does not exist" ]] || false
+}
+
+@test "apply for non-existing bounty" {
+  run cleos push action work.pomelo apply '[bounty11, hunter1.eosn]' -p hunter1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "apply for bounty for wrong user" {
+  run cleos push action work.pomelo apply '[bounty1, hunter1.eosn]' -p hunter2.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[user_id] is not authorized" ]] || false
+}
+
+@test "apply for bounty" {
+  run cleos push action work.pomelo apply '[bounty1, hunter1.eosn]' -p hunter1.eosn
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].applicant_user_ids[0]')
+  [ "$result" = "hunter1.eosn" ]
+}
+
+@test "apply for bounty for the second time" {
+  run cleos push action work.pomelo apply '[bounty1, hunter1.eosn]' -p hunter1.eosn -f
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[user_id] is already applicant" ]] || false
+}
+
+@test "approve wrong bounty" {
+  run cleos push action work.pomelo approve '[bounty11, hunter1.eosn]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "approve wrong hunter" {
+  run cleos push action work.pomelo approve '[bounty1, hunter2.eosn]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[applicant_user_id] did not apply" ]] || false
+}
+
+@test "approve bounty successfully" {
+  run cleos push action work.pomelo approve '[bounty1, hunter1.eosn]' -p author1.eosn
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].approved_user_id')
+  [ "$result" = "hunter1.eosn" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "started" ]
+}
