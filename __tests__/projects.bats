@@ -1,20 +1,5 @@
 #!/usr/bin/env bats
 
-
-@test "fund non-existing bounty" {
-  run cleos transfer funder1 work.pomelo "1000.0000 EOS" "badbounty,funder1.eosn"
-  echo "Output: $output"
-  [ $status -eq 1 ]
-  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
-}
-
-@test "apply for non-existing bounty" {
-  run cleos push action work.pomelo apply '[badbounty, hunter1.eosn]' -p hunter1.eosn
-  echo "Output: $output"
-  [ $status -eq 1 ]
-  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
-}
-
 @test "create unauthorized bounty" {
   run cleos push action work.pomelo createbounty '[author1.eosn, bounty1, "EOS", null]' -p author2.eosn
   echo "Output: $output"
@@ -50,6 +35,13 @@
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].bounty_id')
   [ $result = "bounty1" ]
 }
+
+@test "create already existing bounty" {
+  run cleos push action work.pomelo createbounty '[author2.eosn, bounty1, "USDT", null]' -p author2.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] already exists" ]] || false
+}
+
 
 @test "send token with invalid memo" {
   run cleos transfer funder1 work.pomelo "100.0000 EOS" ""
@@ -129,7 +121,7 @@
 }
 
 @test "fund already completed bounty" {
-  run cleos transfer funder1 work.pomelo "2.0000 EOS" "bounty1"
+  run cleos transfer funder1 work.pomelo "5.0000 EOS" "bounty1"
   [ $status -eq 1 ]
   [[ "$output" =~ "bounty not available for funding" ]] || false
 }
@@ -140,4 +132,41 @@
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
   [ $result = "pending" ]
 }
+
+
+@test "fund the bounty by author1" {
+  run cleos transfer funder1 work.pomelo "2.0000 EOS" "bounty1"
+  echo "Output: $output"
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
+  [ "$result" = "1.9000 EOS 0.1000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
+  [ "$result" = "author1.eosn 2.0000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
+  [ $result = "1" ]
+}
+
+@test "fund the bounty by funder1" {
+  run cleos transfer funder1 work.pomelo "5.0000 EOS" "bounty1,funder1.eosn"
+  [ $status -eq 0 ]
+  run cleos transfer funder1 work.pomelo "3.0000 EOS" "bounty1,funder1.eosn"
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
+  [ "$result" = "9.5000 EOS 0.5000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
+  [ "$result" = "author1.eosn 2.0000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[1].key + " " + .rows[0].funders[1].value')
+  [ "$result" = "funder1.eosn 8.0000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders | length')
+  [ $result = "2" ]
+  result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
+  [ $result = "3" ]
+}
+
+# @test "apply for non-existing bounty" {
+#   run cleos push action work.pomelo apply '[badbounty, hunter1.eosn]' -p hunter1.eosn
+#   echo "Output: $output"
+#   [ $status -eq 1 ]
+#   [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+# }
 
