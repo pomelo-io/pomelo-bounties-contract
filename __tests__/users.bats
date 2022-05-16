@@ -28,6 +28,18 @@
   run cleos push action login.eosn create '["hunter3.eosn", ["EOS6MRyAjQq8ud7hVNYcfnVPJqcVpscN5So8BhtHuGYqET5GDW5CV"]]' -p login.eosn
   [ $status -eq 0 ]
 
+  run cleos push action login.eosn link '["author1.eosn", "author1", "SIG_K1_JutbxGsNuYmbFQ81fRvspRTa1vvJF7eVoKNQsmNf8mKmKoC4Q7Sk15AoqDrC8MDYpNLrATP8owLSFAui7nZB5tvARtLNcW"]' -p author1
+  [ $status -eq 0 ]
+
+  run cleos push action login.eosn link '["hunter1.eosn", "hunter1", "SIG_K1_Kb1P15WPNqJJBqGy2jAX4umWGUcYkfwFhZeaXQTUXDnc7RyoQn6f9STfKaNSiXEjLsMSUnnHGwbbeU2Bc6dQFYkxQuEx8d"]' -p hunter1
+  [ $status -eq 0 ]
+
+  run cleos push action login.eosn link '["hunter2.eosn", "hunter2", "SIG_K1_KjHmbiHTDLcDtfH55mFFDQTcgFpaPu1x8itXE5HLrrwpUhuQuNn96osLbLgdQrTYXfNWpL31oE4arGhKgP9w3P8jZNjJ8u"]' -p hunter2
+  [ $status -eq 0 ]
+
+  run cleos push action login.eosn link '["hunter3.eosn", "hunter3", "SIG_K1_JyirGTtBS38YSLfqH6i5uPTRT7C5YKpDGpVLv4oqms3kef9nWGkkvUnvCNckP5cuNChpRmAKCM1DgfNcxG6pxBFV19e8NT"]' -p hunter3
+  [ $status -eq 0 ]
+
   result=$(cleos get table login.eosn login.eosn users -l 20 | jq -r '.rows | length')
   [ $result = "8" ]
 

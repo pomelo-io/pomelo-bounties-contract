@@ -134,19 +134,66 @@
 }
 
 
+@test "withdraw non-funded bounty" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "nothing to withdraw" ]] || false
+}
+
 @test "fund the bounty by author1" {
   run cleos transfer funder1 work.pomelo "2.0000 EOS" "bounty1"
-  echo "Output: $output"
   [ $status -eq 0 ]
+
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
   [ "$result" = "1.9000 EOS 0.1000 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
   [ "$result" = "author1.eosn 2.0000 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
   [ $result = "1" ]
+
+  pomelo_balance=$(cleos get currency balance eosio.token work.pomelo)
+  [ "$pomelo_balance" = "2.0000 EOS" ]
 }
 
+@test "withdraw non-existing bounty" {
+  run cleos push action work.pomelo withdraw '[bounty11, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "withdraw bounty to wrong account" {
+  run cleos push action work.pomelo withdraw '[bounty1, funder1]' -p funder1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[receiver] must be linked with EOSN Login to [author_user_id]" ]] || false
+
+  run cleos push action work.pomelo withdraw '[bounty1, author2]' -p author2
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[receiver] must be linked with EOSN Login to [author_user_id]" ]] || false
+}
+
+
+@test "withdraw bounty" {
+
+  author_balance=$(cleos get currency balance eosio.token author1)
+  [ "$author_balance" = "1000000.0000 EOS" ]
+
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
+  [ "$result" = "0.0000 EOS 0.0000 EOS" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders | length')
+  [ $result = "0" ]
+
+  author_balance=$(cleos get currency balance eosio.token author1)
+  [ "$author_balance" = "1000002.0000 EOS" ]
+  pomelo_balance=$(cleos get currency balance eosio.token work.pomelo)
+  [ "$pomelo_balance" = "0.0000 EOS" ]
+}
+
+
 @test "fund the bounty by funder1" {
+  run cleos transfer funder1 work.pomelo "2.0000 EOS" "bounty1"
+  [ $status -eq 0 ]
   run cleos transfer funder1 work.pomelo "5.0000 EOS" "bounty1,funder1.eosn"
   [ $status -eq 0 ]
   run cleos transfer funder1 work.pomelo "3.0000 EOS" "bounty1,funder1.eosn"
@@ -160,7 +207,7 @@
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders | length')
   [ $result = "2" ]
   result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
-  [ $result = "3" ]
+  [ $result = "4" ]
 }
 
 @test "apply for bounty in wrong state" {
@@ -186,7 +233,13 @@
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders | length')
   [ $result = "2" ]
   result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
-  [ $result = "4" ]
+  [ $result = "5" ]
+}
+
+@test "withdraw bounty in open state" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
 }
 
 @test "apply for bounty with non-existing eosn user" {
@@ -220,6 +273,24 @@
   [[ "$output" =~ "[user_id] is already applicant" ]] || false
 }
 
+@test "claim unapproved bounty" {
+  run cleos push action work.pomelo claim '[bounty1, hunter1]' -p hunter1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "release unapproved bounty" {
+  run cleos push action work.pomelo release '[bounty1]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "withdraw unapproved" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
 @test "approve wrong bounty" {
   run cleos push action work.pomelo approve '[bounty11, hunter1.eosn]' -p author1.eosn
   [ $status -eq 1 ]
@@ -239,4 +310,157 @@
   [ "$result" = "hunter1.eosn" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
   [ $result = "started" ]
+}
+
+@test "claim incomplete bounty" {
+  run cleos push action work.pomelo claim '[bounty1, hunter1]' -p hunter1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "release incomplete bounty" {
+  run cleos push action work.pomelo release '[bounty1]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "withdraw incomplete bounty" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "complete non-existing bounty" {
+  run cleos push action work.pomelo complete '[bounty11]' -p hunter1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "complete bounty by wrong hunter" {
+  run cleos push action work.pomelo complete '[bounty1]' -p hunter2.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[user_id] is not authorized" ]] || false
+}
+
+@test "complete bounty successfully" {
+  run cleos push action work.pomelo complete '[bounty1]' -p hunter1.eosn
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "submitted" ]
+}
+
+@test "complete already completed bounty" {
+  run cleos push action work.pomelo complete '[bounty1]' -p hunter1.eosn -f
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "claim unreleased bounty" {
+  run cleos push action work.pomelo claim '[bounty1, hunter1]' -p hunter1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "withdraw completed bounty" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "deny non-existing bounty" {
+  run cleos push action work.pomelo deny '[bounty11]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "deny bounty successfully" {
+  run cleos push action work.pomelo deny '[bounty1]' -p author1.eosn
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "started" ]
+}
+
+@test "deny already denied bounty" {
+  run cleos push action work.pomelo deny '[bounty1]' -p author1.eosn -f
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "complete denied bounty" {
+  run cleos push action work.pomelo complete '[bounty1]' -p hunter1.eosn
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "submitted" ]
+}
+
+@test "release non-existing bounty" {
+  run cleos push action work.pomelo release '[bounty11]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "release unauthorized bounty" {
+  run cleos push action work.pomelo release '[bounty1]' -p author2.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[user_id] is not authorized" ]] || false
+}
+
+@test "release bounty successfully" {
+  run cleos push action work.pomelo release '[bounty1]' -p author1.eosn
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "released" ]
+}
+
+@test "withdraw released bounty" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
+@test "claim non-existing bounty" {
+  run cleos push action work.pomelo claim '[bounty11, hunter1]' -p hunter1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "claim bounty for non-linked account" {
+  run cleos push action work.pomelo claim '[bounty1, hunter2]' -p hunter2
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[receiver] must be linked with EOSN Login to [approved_user_id]" ]] || false
+}
+
+@test "claim bounty successfully" {
+  fee_balance=$(cleos get currency balance eosio.token fee.pomelo)
+  [ "$fee_balance" = "" ]
+  hunter_balance=$(cleos get currency balance eosio.token hunter1)
+  [ "$hunter_balance" = "" ]
+
+  run cleos push action work.pomelo claim '[bounty1, hunter1]' -p hunter1
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "done" ]
+
+  fee_balance=$(cleos get currency balance eosio.token fee.pomelo)
+  [ "$fee_balance" = "0.6500 EOS" ]
+  hunter_balance=$(cleos get currency balance eosio.token hunter1)
+  [ "$hunter_balance" = "12.3500 EOS" ]
+}
+
+@test "claim already claimed bounty" {
+  run cleos push action work.pomelo setstate '[bounty1, submitted]' -p work.pomelo
+  [ $status -eq 0 ]
+  run cleos push action work.pomelo release '[bounty1]' -p author1.eosn -f
+  [ $status -eq 0 ]
+  run cleos push action work.pomelo claim '[bounty1, hunter1]' -p hunter1 -f
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty already claimed" ]] || false
+  run cleos push action work.pomelo setstate '[bounty1, done]' -p work.pomelo
+  [ $status -eq 0 ]
+}
+
+@test "withdraw claimed bounty" {
+  run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
 }

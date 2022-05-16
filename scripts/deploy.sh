@@ -58,12 +58,6 @@ cleos transfer eosio funder1 "1000000.0000 PLAY" ""
 cleos transfer eosio funder1 "1000000.0000 EOS" "" --contract fake.token
 cleos transfer eosio funder2 "1000000.0000 EOS" ""
 cleos transfer eosio funder2 "1000000.0000 USDT" "" --contract tethertether
-cleos transfer eosio hunter1 "1000000.0000 EOS" ""
-cleos transfer eosio hunter1 "1000000.0000 USDT" "" --contract tethertether
-cleos transfer eosio hunter2 "1000000.0000 EOS" ""
-cleos transfer eosio hunter2 "1000000.0000 USDT" "" --contract tethertether
-cleos transfer eosio hunter3 "1000000.0000 EOS" ""
-cleos transfer eosio hunter3 "1000000.0000 USDT" "" --contract tethertether
 cleos transfer eosio user.noeosn "1000000.0000 EOS" ""
 
 # set price in defibox contract

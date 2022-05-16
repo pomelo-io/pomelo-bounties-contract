@@ -21,9 +21,6 @@ cleos transfer myaccount work.pomelo "100.0000 USDT" "bounty1,funder.eosn" --con
 # make bounty public
 cleos push action work.pomelo setstate '[bounty1, open]' -p work.pomelo
 
-# hunter apply for bounty
-cleos push action work.pomelo apply '[bounty1, hunter.eosn]' -p hunter.eosn
-
 # author select hunter for bounty
 cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p author.eosn
 

@@ -175,6 +175,7 @@ void pomelo::release( const name bounty_id )
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
         row.status = "released"_n;
+        row.updated_at = current_time_point();
     });
 }
 
@@ -214,14 +215,19 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
 
     // validate input
     check( bounty.status == "pending"_n, "pomelo::withdraw: [bounty.status] must be `pending` to `withdraw`" );
-    check( bounty.amount.quantity.amount > 0, "pomelo::withdraw: [amount] must be positive" );
+
+    const auto refund = bounty.amount + bounty.fee;
+    check( refund.quantity.amount > 0, "pomelo::withdraw: nothing to withdraw" );
+    check( bounty.claimed.amount == 0, "pomelo::withdraw: [bounty_id] already claimed" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, bounty.amount, "withdraw from [bounty_id=" + bounty_id.to_string() + "]" );
+    transfer(get_self(), receiver, refund, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
         row.amount.quantity.amount = 0;
+        row.fee.quantity.amount = 0;
+        row.funders = {};
         row.updated_at = current_time_point();
     });
 }
@@ -278,13 +284,13 @@ void pomelo::claim( const name bounty_id, const name receiver )
 
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
-    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::withdraw: [bounty_id] does not exists" );
-
-    // require auth by applicant
-    check( eosn::login::is_auth( bounty.approved_user_id, get_configs().login_contract ), "pomelo::claim: [receiver] must be linked with EOSN Login to [approved_user_id]" );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::claim: [bounty_id] does not exists" );
 
     // can only claim when released or submitted (after 72 hours)
     check( bounty.status == "released"_n || bounty.status == "submitted"_n, "pomelo::claim: [bounty.status] must be `released` or `submitted` to `claim`" );
+
+    // require auth by applicant
+    check( eosn::login::is_auth( bounty.approved_user_id, get_configs().login_contract ), "pomelo::claim: [receiver] must be linked with EOSN Login to [approved_user_id]" );
 
     // bounty can be claimed after 72 hours of being submitted
     const uint32_t sec_since_submitted = current_time_point().sec_since_epoch() - bounty.submitted_at.sec_since_epoch();
@@ -300,7 +306,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
     check( balance >= bounty.amount + bounty.fee, "pomelo::claim: not enough balance to claim" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, bounty.amount, "claimed [bounty_id=" + bounty_id.to_string() + "]" );
+    transfer(get_self(), receiver, bounty.amount, "🍈 claim " + bounty_id.to_string() + " bounty" );
 
     // transfer fee to fee account
     transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
