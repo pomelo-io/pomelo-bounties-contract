@@ -33,7 +33,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
     check( quantity.amount >= min_amount, "pomelo::deposit_bounty: [quantity=" + ext_quantity.quantity.to_string() + "] is less than [tokens.min_amount=" + to_string( min_amount ) + "]");
 
     // TO-DO: bounty can only deposit when state == "pending/open/started"
-    check( STATUS_DEPOSIT_TYPES.find(bounty.status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for donation");
+    check( STATUS_DEPOSIT_TYPES.find(bounty.status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for funding");
 
     // check incoming token deposit
     check( bounty.amount.get_extended_symbol() == ext_quantity.get_extended_symbol(), "pomelo::deposit_bounty: quantity extended symbol not allowed");

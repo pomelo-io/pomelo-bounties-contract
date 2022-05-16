@@ -40,6 +40,8 @@ cleos push action eosio.token create '["eosio", "10000000000.0000 EOS"]' -p eosi
 cleos push action eosio.token issue '["eosio", "1000000000.0000 EOS", "init"]' -p eosio
 cleos push action tethertether create '["eosio", "100000000.0000 USDT"]' -p tethertether
 cleos push action tethertether issue '["eosio", "10000000.0000 USDT", "init"]' -p eosio
+cleos push action eosio.token create '["eosio", "10000000000.0000 PLAY"]' -p eosio.token
+cleos push action eosio.token issue '["eosio", "1000000000.0000 PLAY", "init"]' -p eosio
 
 # create fake tokens
 cleos push action fake.token create '["eosio", "100000000.0000 EOS"]' -p fake.token
@@ -52,6 +54,7 @@ cleos transfer eosio author2 "1000000.0000 EOS" ""
 cleos transfer eosio author2 "1000000.0000 USDT" "" --contract tethertether
 cleos transfer eosio funder1 "1000000.0000 EOS" ""
 cleos transfer eosio funder1 "1000000.0000 USDT" "" --contract tethertether
+cleos transfer eosio funder1 "1000000.0000 PLAY" ""
 cleos transfer eosio funder1 "1000000.0000 EOS" "" --contract fake.token
 cleos transfer eosio funder2 "1000000.0000 EOS" ""
 cleos transfer eosio funder2 "1000000.0000 USDT" "" --contract tethertether
