@@ -162,6 +162,7 @@ public:
         name                    author_user_id;
         map<name, asset>        funders;
         extended_asset          amount;
+        extended_asset          fee;
         asset                   claimed;
         set<name>               applicant_user_ids;
         name                    approved_user_id;

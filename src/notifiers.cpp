@@ -44,20 +44,21 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
 
     // calculate fee
     const extended_asset fee = calculate_fee( ext_quantity );
-    double value = calculate_value( ext_quantity - fee );
-    print("\n", ext_quantity - fee, " == ", value);
-    transfer( get_self(), fee_account, fee, "🍈 Pomelo team");
+    const extended_asset amount = ext_quantity - fee;
+    double value = calculate_value( amount );
+    print("\n", amount, " == ", value);
 
     // update bounty deposit
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
-        if(row.funders.count(user_id) == 0) row.funders[user_id] = asset{0, quantity.symbol};
-        row.funders[user_id] += quantity;
-        row.amount += ext_quantity;
+        if(row.funders.count(funder_user_id) == 0) row.funders[funder_user_id] = asset{0, quantity.symbol};
+        row.funders[funder_user_id] += quantity;
+        row.amount += amount;
+        row.fee += fee;
         row.updated_at = current_time_point();
     });
 
     // save for logging purposes
-    save_transfer( bounty_id, funder_user_id, from, get_self(), ext_quantity, fee.quantity, memo, value );
+    save_transfer( bounty_id, funder_user_id, from, get_self(), amount, fee.quantity, memo, value );
 }
 
 void pomelo::save_transfer( const name bounty_id, const name funder_user_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value )

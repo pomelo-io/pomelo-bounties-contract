@@ -64,6 +64,7 @@ void pomelo::createbounty( const name author_user_id, const name bounty_id, cons
         row.author_user_id = author_user_id;
         row.funders = {};
         row.amount = extended_asset{0, { token.sym, token.contract }};
+        row.fee = extended_asset{0, { token.sym, token.contract }};
         row.claimed = asset{0, token.sym};
         row.applicant_user_ids = {};
         row.approved_user_id = {};
@@ -291,20 +292,22 @@ void pomelo::claim( const name bounty_id, const name receiver )
         check( bounty.status == "released"_n, "pomelo::claim: [bounty.status] must be `released` to `claim` or wait 72 hours" );
     }
 
-    // calculate claimable amount
-    extended_asset claimable = bounty.amount;
-    claimable.quantity -= bounty.claimed;
-    check( claimable.quantity.amount > 0, "pomelo::claim: [claimable] already claimed" );
+    // allow claim once only
+    // TODO: consider flow when bounty is re-opened after claim and funded again allowing second claim
+    check( bounty.claimed.amount == 0, "pomelo::claim: bounty already claimed" );
 
-    const auto balance = sx::utils::get_balance(claimable.get_extended_symbol(), get_self()).quantity;
-    check( balance >= claimable.quantity, "pomelo::claim: not enough balance to claim" );
+    const auto balance = sx::utils::get_balance((bounty.amount + bounty.fee).get_extended_symbol(), get_self());
+    check( balance >= bounty.amount + bounty.fee, "pomelo::claim: not enough balance to claim" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, claimable, "claimed [bounty_id=" + bounty_id.to_string() + "]" );
+    transfer(get_self(), receiver, bounty.amount, "claimed [bounty_id=" + bounty_id.to_string() + "]" );
+
+    // transfer fee to fee account
+    transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
-        row.claimed += claimable.quantity;
+        row.claimed += bounty.amount.quantity;
         row.status = "done"_n;
         row.updated_at = current_time_point();
         row.completed_at = current_time_point();
