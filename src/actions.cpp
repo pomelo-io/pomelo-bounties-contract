@@ -50,12 +50,12 @@ void pomelo::createbounty( const name author_user_id, const name bounty_id, cons
 
     const auto type = bounty_type ? *bounty_type : "traditional"_n;
     check( BOUNTY_TYPES.count(type), "pomelo::createbounty: unknown [bounty_type]" );
+
     // tables
     pomelo::bounties_table _bounties( get_self(), get_self().value );
-
-    // validate input
     const auto itr = _bounties.find( bounty_id.value );
     check( itr == _bounties.end(), "pomelo::createbounty: [bounty_id] already exists" );
+
     auto token = get_token( accepted_token );
 
     // create bounty

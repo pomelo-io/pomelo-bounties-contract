@@ -10,8 +10,15 @@ using namespace std;
 
 // static values
 static constexpr extended_symbol VALUE_SYM = { symbol {"USDT", 4}, "tethertether"_n };
-// static set<name> STATUS_TYPES = set<name>{"published"_n, "pending"_n, "retired"_n, "banned"_n, "denied"_n};
-static const set<name> STATUS_TYPES = set<name>{"pending"_n, "open"_n, "started"_n, "submitted"_n, "done"_n};
+static const set<name> STATUS_TYPES = set<name>{
+    "pending"_n,        // pending admin approval and funding
+    "open"_n,           // open for applications and funding
+    "started"_n,        // hunter approved by author and work in progress
+    "submitted"_n,      // hunter submitted the work, waiting for for approval from author
+    "released"_n,       // author approved work, ready for claim
+    "done"_n,           // bounty claimed, bounty successfully completed
+    "closed"_n          // bounty closed by author/admin
+};
 static const set<name> STATUS_DEPOSIT_TYPES = set<name>{"pending"_n, "open"_n, "started"_n};
 static const set<name> BOUNTY_TYPES = set<name>{"traditional"_n};
 static constexpr uint32_t DAY = 86400;
