@@ -464,3 +464,33 @@
   [ $status -eq 1 ]
   [[ "$output" =~ "[bounty.status] must be" ]] || false
 }
+
+@test "simulate bounty2" {
+  run cleos push action work.pomelo createbounty '[author2.eosn, bounty2, "USDT", traditional]' -p author2.eosn
+  [ $status -eq 0 ]
+
+  run cleos transfer funder2 work.pomelo "2.0000 USDT" "bounty2,funder2.eosn" --contract tethertether
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo setstate '[bounty2, open]' -p work.pomelo
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo apply '[bounty2, hunter2.eosn]' -p hunter2.eosn
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo approve '[bounty2, hunter2.eosn]' -p author2.eosn
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo complete '[bounty2]' -p hunter2.eosn
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo deny '[bounty2]' -p author2.eosn
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo terminate '[bounty2]' -p author2.eosn
+  [ $status -eq 0 ]
+
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].status + .rows[1].approved_user_id')
+  [ $result = "open" ]
+
+}

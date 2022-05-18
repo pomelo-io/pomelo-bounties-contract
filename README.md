@@ -24,6 +24,9 @@ cleos push action work.pomelo setstate '[bounty1, open]' -p work.pomelo
 # author select hunter for bounty
 cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p author.eosn
 
+# author terminate work on the bounty and 'fire' hunter
+cleos push action work.pomelo terminate '[bounty1]' -p author.eosn
+
 # OPTION 1. Author releases funds to hunter when bounty is completed
 # > Bounty state must be "completed"
 cleos push action work.pomelo release '[bounty1]' -p author.eosn

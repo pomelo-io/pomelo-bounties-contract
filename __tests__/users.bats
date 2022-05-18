@@ -31,6 +31,9 @@
   run cleos push action login.eosn link '["author1.eosn", "author1", "SIG_K1_JutbxGsNuYmbFQ81fRvspRTa1vvJF7eVoKNQsmNf8mKmKoC4Q7Sk15AoqDrC8MDYpNLrATP8owLSFAui7nZB5tvARtLNcW"]' -p author1
   [ $status -eq 0 ]
 
+  run cleos push action login.eosn link '["author2.eosn", "author2", "SIG_K1_KkxhXATzWJpmGJQdpKkSwsccrZ1apz3y8P7Hgzumuvz1Japy8yaoPMqi34HerwxYytUvLVp9YR82Bqkb5KtrNwWKCfdHAy"]' -p author2
+  [ $status -eq 0 ]
+
   run cleos push action login.eosn link '["hunter1.eosn", "hunter1", "SIG_K1_Kb1P15WPNqJJBqGy2jAX4umWGUcYkfwFhZeaXQTUXDnc7RyoQn6f9STfKaNSiXEjLsMSUnnHGwbbeU2Bc6dQFYkxQuEx8d"]' -p hunter1
   [ $status -eq 0 ]
 

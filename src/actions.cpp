@@ -160,6 +160,28 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
 
 // @author
 [[eosio::action]]
+void pomelo::terminate( const name bounty_id )
+{
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::terminate: [bounty_id] does not exists" );
+
+    // require auth by author
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+
+    // validate input
+    check( bounty.status == "started"_n, "pomelo::terminate: [bounty.status] must be `started` to terminate" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.approved_user_id = {};
+        row.status = "open"_n;
+        row.updated_at = current_time_point();
+    });
+}
+
+// @author
+[[eosio::action]]
 void pomelo::release( const name bounty_id )
 {
     // get bounty
@@ -261,6 +283,8 @@ void pomelo::complete( const name bounty_id )
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::apply: [bounty_id] does not exists" );
+
+    check( bounty.approved_user_id.value, "pomelo::apply: bounty must have approved user" );
 
     // require auth by applicant
     eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );

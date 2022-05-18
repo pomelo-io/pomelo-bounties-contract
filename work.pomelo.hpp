@@ -368,6 +368,28 @@ public:
     void approve( const name bounty_id, const name applicant_user_id );
 
     /**
+     * ## ACTION `terminate`
+     *
+     * - **authority**: `funder_user_id`
+     *
+     * Author terminates the bounty and removes hunter from the bounty
+     *
+     * > Bounty state must be "started"
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo terminate '[bounty1]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void terminate( const name bounty_id );
+
+    /**
      * ## ACTION `release`
      *
      * - **authority**: `funder_user_id`
