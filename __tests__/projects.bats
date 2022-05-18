@@ -465,7 +465,7 @@
   [[ "$output" =~ "[bounty.status] must be" ]] || false
 }
 
-@test "simulate bounty2" {
+@test "create, fund, publish, apply, approve, complete, deny, terminate and close bounty2" {
   run cleos push action work.pomelo createbounty '[author2.eosn, bounty2, "USDT", traditional]' -p author2.eosn
   [ $status -eq 0 ]
 
@@ -493,4 +493,21 @@
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].status + .rows[1].approved_user_id')
   [ $result = "open" ]
 
+  run cleos push action work.pomelo close '[bounty2]' -p author2.eosn
+  [ $status -eq 0 ]
+
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].status')
+  [ $result = "closed" ]
+}
+
+
+@test "create and close bounty3 by admin" {
+  run cleos push action work.pomelo createbounty '[author2.eosn, bounty3, "EOS", null]' -p author2.eosn
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo close '[bounty3]' -p work.pomelo
+  [ $status -eq 0 ]
+
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status')
+  [ $result = "closed" ]
 }

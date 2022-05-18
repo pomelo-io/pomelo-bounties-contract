@@ -370,7 +370,7 @@ public:
     /**
      * ## ACTION `terminate`
      *
-     * - **authority**: `funder_user_id`
+     * - **authority**: `author_user_id`
      *
      * Author terminates the bounty and removes hunter from the bounty
      *
@@ -390,9 +390,31 @@ public:
     void terminate( const name bounty_id );
 
     /**
+     * ## ACTION `close`
+     *
+     * - **authority**: `author_user_id`
+     *
+     * Author terminates the bounty and removes hunter from the bounty
+     *
+     * > Bounty state must be "open" or "pending"
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo close '[bounty1]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void close( const name bounty_id );
+
+    /**
      * ## ACTION `release`
      *
-     * - **authority**: `funder_user_id`
+     * - **authority**: `author_user_id`
      *
      * Author releases funds to hunter when bounty is completed
      *
@@ -414,7 +436,7 @@ public:
     /**
      * ## ACTION `deny`
      *
-     * - **authority**: `funder_user_id`
+     * - **authority**: `author_user_id`
      *
      * Author denies completed bounty
      *
@@ -436,7 +458,7 @@ public:
     /**
      * ## ACTION `withdraw`
      *
-     * - **authority**: `account` (EOS account linked to EOSN Login's bounty author)
+     * - **authority**: `account` (EOS account linked to EOSN Login's bounty funder or author)
      *
      * Author withdraws funds from bounty in "pending" state (EOS account linked with EOSN Login)
      *

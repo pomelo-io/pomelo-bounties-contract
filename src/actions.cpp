@@ -207,7 +207,7 @@ void pomelo::deny( const name bounty_id )
 {
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
-    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::approve: [bounty_id] does not exists" );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::deny: [bounty_id] does not exists" );
 
     // require auth by author
     eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
@@ -218,6 +218,29 @@ void pomelo::deny( const name bounty_id )
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
         row.status = "started"_n;
+        row.updated_at = current_time_point();
+    });
+}
+
+// @author or @admin
+[[eosio::action]]
+void pomelo::close( const name bounty_id )
+{
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::close: [bounty_id] does not exists" );
+
+    // require auth by admin or author
+    if( !has_auth(get_self()) ){
+        eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    }
+
+    // validate input
+    check( bounty.status == "pending"_n || bounty.status == "open"_n, "pomelo::close: [bounty.status] must be `pending` or `open`" );
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.status = "closed"_n;
         row.updated_at = current_time_point();
     });
 }
