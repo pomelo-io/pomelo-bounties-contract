@@ -501,6 +501,9 @@
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].status + .rows[1].approved_user_id')
   [ $result = "open" ]
 
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].applicant_user_ids | length')
+  [ $result = "0" ]
+
   run cleos push action work.pomelo close '[bounty2]' -p author2.eosn
   [ $status -eq 0 ]
 

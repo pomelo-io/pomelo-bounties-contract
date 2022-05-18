@@ -174,6 +174,7 @@ void pomelo::terminate( const name bounty_id )
 
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.applicant_user_ids.erase(bounty.approved_user_id);
         row.approved_user_id = {};
         row.status = "open"_n;
         row.updated_at = current_time_point();
