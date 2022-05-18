@@ -477,6 +477,9 @@
   run cleos transfer funder2 work.pomelo "2.0000 USDT" "bounty2,funder2.eosn" --contract tethertether
   [ $status -eq 0 ]
 
+  pomelo_balance=$(cleos get currency balance tethertether work.pomelo)
+  [ "$pomelo_balance" = "2.0000 USDT" ]
+
   run cleos push action work.pomelo publish '[bounty2]' -p work.pomelo
   [ $status -eq 0 ]
 
@@ -500,6 +503,15 @@
 
   run cleos push action work.pomelo close '[bounty2]' -p author2.eosn
   [ $status -eq 0 ]
+
+  run cleos push action work.pomelo withdraw '[bounty2, author2]' -p author2
+  [ $status -eq 0 ]
+
+  pomelo_balance=$(cleos get currency balance tethertether work.pomelo)
+  [ "$pomelo_balance" = "0.0000 USDT" ]
+
+  pomelo_balance=$(cleos get currency balance tethertether author2)
+  [ "$pomelo_balance" = "1000002.0000 USDT" ]
 
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].status')
   [ $result = "closed" ]

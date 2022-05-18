@@ -280,7 +280,7 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
     check( eosn::login::is_auth( bounty.author_user_id, get_configs().login_contract ), "pomelo::withdraw: [receiver] must be linked with EOSN Login to [author_user_id]" );
 
     // validate input
-    check( bounty.status == "pending"_n, "pomelo::withdraw: [bounty.status] must be `pending` to `withdraw`" );
+    check( bounty.status == "pending"_n || bounty.status == "closed"_n, "pomelo::withdraw: [bounty.status] must be `pending` or `closed` to withdraw" );
 
     const auto refund = bounty.amount + bounty.fee;
     check( refund.quantity.amount > 0, "pomelo::withdraw: nothing to withdraw" );
