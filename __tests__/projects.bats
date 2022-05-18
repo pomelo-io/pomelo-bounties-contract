@@ -133,6 +133,11 @@
   [ $result = "pending" ]
 }
 
+@test "publish unfunded bounty" {
+  run cleos push action work.pomelo publish '[bounty1]' -p work.pomelo
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty must be funded to publish" ]] || false
+}
 
 @test "withdraw non-funded bounty" {
   run cleos push action work.pomelo withdraw '[bounty1, author1]' -p author1
@@ -216,8 +221,8 @@
   [[ "$output" =~ "[bounty.status] must be" ]] || false
 }
 
-@test "change state to open" {
-  run cleos push action work.pomelo setstate '[bounty1, open]' -p work.pomelo
+@test "publish bounty" {
+  run cleos push action work.pomelo publish '[bounty1]' -p work.pomelo
   [ $status -eq 0 ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
   [ $result = "open" ]
@@ -472,7 +477,7 @@
   run cleos transfer funder2 work.pomelo "2.0000 USDT" "bounty2,funder2.eosn" --contract tethertether
   [ $status -eq 0 ]
 
-  run cleos push action work.pomelo setstate '[bounty2, open]' -p work.pomelo
+  run cleos push action work.pomelo publish '[bounty2]' -p work.pomelo
   [ $status -eq 0 ]
 
   run cleos push action work.pomelo apply '[bounty2, hunter2.eosn]' -p hunter2.eosn

@@ -412,6 +412,28 @@ public:
     void close( const name bounty_id );
 
     /**
+     * ## ACTION `publish`
+     *
+     * - **authority**: `admin`
+     *
+     * Admin publishes the bounty making it open for applications
+     *
+     * > Bounty state must be "pending"
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo publish '[bounty1]' -p work.pomelo
+     * ```
+     */
+    [[eosio::action]]
+    void publish( const name bounty_id );
+
+    /**
      * ## ACTION `release`
      *
      * - **authority**: `author_user_id`

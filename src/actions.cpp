@@ -245,6 +245,27 @@ void pomelo::close( const name bounty_id )
     });
 }
 
+// @admin
+[[eosio::action]]
+void pomelo::publish( const name bounty_id )
+{
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::publish: [bounty_id] does not exists" );
+
+    require_auth(get_self());
+
+    // validate input
+    check( bounty.status == "pending"_n, "pomelo::publish: [bounty.status] must be `pending` to publish" );
+    check( bounty.amount.quantity.amount != 0, "pomelo::publish: bounty must be funded to publish");
+
+    // update bounty
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.status = "open"_n;
+        row.updated_at = current_time_point();
+    });
+}
+
 // @author
 [[eosio::action]]
 void pomelo::withdraw( const name bounty_id, const name receiver )
