@@ -89,9 +89,15 @@ void pomelo::setstate( const name bounty_id, const name status )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     auto & bounty = _bounties.get( bounty_id.value, "pomelo::setstate: [bounty_id] does not exist");
 
+    check( bounty.status != status, "pomelo::setstate: status was not modified");
+    if (status == "open"_n) check( bounty.amount.quantity.amount > 0, "pomelo::setstate: `open` bounty needs to be funded" );
+    if (status == "started"_n) check( bounty.approved_user_id.value, "pomelo::setstate: `started` bounty needs to have a hunter" );
+    if (status == "submitted"_n) check( bounty.submitted_at.sec_since_epoch(), "pomelo::setstate: `submitted` bounty needs to be completed first" );
+    if (status == "released"_n) check( bounty.submitted_at.sec_since_epoch(), "pomelo::setstate: `released` bounty needs to be completed first" );
+    if (status == "done"_n) check( bounty.claimed.amount > 0, "pomelo::setstate: `done` bounty needs to be claimed first" );
+
     // modify
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
-        check( row.status != status, "pomelo::setstate: status was not modified");
         row.status = status;
         row.updated_at = current_time_point();
     });
@@ -158,7 +164,7 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
     });
 }
 
-// @author
+// @author or @admin
 [[eosio::action]]
 void pomelo::forfeit( const name bounty_id )
 {
@@ -166,8 +172,8 @@ void pomelo::forfeit( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::forfeit: [bounty_id] does not exists" );
 
-    // require auth by author
-    eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
+    // require auth by hunter or admin
+    if( !has_auth(get_self()) ) eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "started"_n, "pomelo::forfeit: [bounty.status] must be `started` to forfeit" );
@@ -181,7 +187,7 @@ void pomelo::forfeit( const name bounty_id )
     });
 }
 
-// @author
+// @author or @admin
 [[eosio::action]]
 void pomelo::release( const name bounty_id )
 {
@@ -189,8 +195,8 @@ void pomelo::release( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::release: [bounty_id] does not exists" );
 
-    // require auth by author
-    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    // require auth by author or admin
+    if( !has_auth(get_self()) ) eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "submitted"_n, "pomelo::release: [bounty.status] must be `submitted` to `release`" );
@@ -232,9 +238,7 @@ void pomelo::close( const name bounty_id )
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::close: [bounty_id] does not exists" );
 
     // require auth by admin or author
-    if( !has_auth(get_self()) ){
-        eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
-    }
+    if( !has_auth(get_self()) ) eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "pending"_n || bounty.status == "open"_n, "pomelo::close: [bounty.status] must be `pending` or `open`" );

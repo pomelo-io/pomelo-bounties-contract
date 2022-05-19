@@ -113,24 +113,26 @@
   [[ "$output" =~ "status was not modified" ]] || false
 }
 
-@test "successfully change state" {
+@test "change to invalid states" {
   run cleos push action work.pomelo setstate '[bounty1, done]' -p work.pomelo
-  [ $status -eq 0 ]
-  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
-  [ $result = "done" ]
-}
-
-@test "fund already completed bounty" {
-  run cleos transfer funder1 work.pomelo "5.0000 EOS" "bounty1"
   [ $status -eq 1 ]
-  [[ "$output" =~ "bounty not available for funding" ]] || false
-}
+  [[ "$output" =~ "bounty needs to be claimed first" ]] || false
 
-@test "change state back to pending" {
-  run cleos push action work.pomelo setstate '[bounty1, pending]' -p work.pomelo
-  [ $status -eq 0 ]
-  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
-  [ $result = "pending" ]
+  run cleos push action work.pomelo setstate '[bounty1, released]' -p work.pomelo
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty needs to be completed first" ]] || false
+
+  run cleos push action work.pomelo setstate '[bounty1, submitted]' -p work.pomelo
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty needs to be completed first" ]] || false
+
+  run cleos push action work.pomelo setstate '[bounty1, started]' -p work.pomelo
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty needs to have a hunter" ]] || false
+
+  run cleos push action work.pomelo setstate '[bounty1, open]' -p work.pomelo
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty needs to be funded" ]] || false
 }
 
 @test "publish unfunded bounty" {
@@ -317,6 +319,18 @@
   [ $result = "started" ]
 }
 
+@test "change state to pending and back to started" {
+  run cleos push action work.pomelo setstate '[bounty1, pending]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "pending" ]
+
+  run cleos push action work.pomelo setstate '[bounty1, started]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
+  [ $result = "started" ]
+}
+
 @test "claim incomplete bounty" {
   run cleos push action work.pomelo claim '[bounty1, hunter1]' -p hunter1
   [ $status -eq 1 ]
@@ -378,11 +392,29 @@
   [[ "$output" =~ "[bounty_id] does not exists" ]] || false
 }
 
+@test "forfeit submitted bounty" {
+  run cleos push action work.pomelo forfeit '[bounty1]' -p hunter1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty.status] must be" ]] || false
+}
+
 @test "deny bounty successfully" {
   run cleos push action work.pomelo deny '[bounty1]' -p author1.eosn
   [ $status -eq 0 ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].status')
   [ $result = "started" ]
+}
+
+@test "forfeit non-existing bounty" {
+  run cleos push action work.pomelo forfeit '[bounty11]' -p hunter1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+}
+
+@test "forfeit unauthorized bounty" {
+  run cleos push action work.pomelo forfeit '[bounty1]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[user_id] is not authorized" ]] || false
 }
 
 @test "deny already denied bounty" {
@@ -462,6 +494,12 @@
   [[ "$output" =~ "bounty already claimed" ]] || false
   run cleos push action work.pomelo setstate '[bounty1, done]' -p work.pomelo
   [ $status -eq 0 ]
+}
+
+@test "fund already completed bounty" {
+  run cleos transfer funder1 work.pomelo "5.0000 EOS" "bounty1"
+  [ $status -eq 1 ]
+  [[ "$output" =~ "bounty not available for funding" ]] || false
 }
 
 @test "withdraw claimed bounty" {
