@@ -1,35 +1,35 @@
 #!/usr/bin/env bats
 
 @test "create unauthorized bounty" {
-  run cleos push action work.pomelo createbounty '[author1.eosn, bounty1, "EOS", null]' -p author2.eosn
+  run cleos push action work.pomelo create '[author1.eosn, bounty1, "EOS", null]' -p author2.eosn
   echo "Output: $output"
   [ $status -eq 1 ]
   [[ "$output" =~ "[user_id] is not authorized" ]] || false
 }
 
 @test "create wrong type bounty" {
-  run cleos push action work.pomelo createbounty '[author1.eosn, bounty1, "EOS", badtype]' -p author1.eosn
+  run cleos push action work.pomelo create '[author1.eosn, bounty1, "EOS", badtype]' -p author1.eosn
   echo "Output: $output"
   [ $status -eq 1 ]
   [[ "$output" =~ "unknown [bounty_type]" ]] || false
 }
 
 @test "create wrong token bounty" {
-  run cleos push action work.pomelo createbounty '[author1.eosn, bounty1, "SYM", null]' -p author1.eosn
+  run cleos push action work.pomelo create '[author1.eosn, bounty1, "SYM", null]' -p author1.eosn
   echo "Output: $output"
   [ $status -eq 1 ]
   [[ "$output" =~ "[symcode] not supported" ]] || false
 }
 
 @test "create bounty by non-existing EOSN user" {
-  run cleos push action work.pomelo createbounty '[author1, bounty1, "EOS", null]' -p author1
+  run cleos push action work.pomelo create '[author1, bounty1, "EOS", null]' -p author1
   echo "Output: $output"
   [ $status -eq 1 ]
   [[ "$output" =~ "[user_id] does not exist" ]] || false
 }
 
 @test "successfully create bounty" {
-  run cleos push action work.pomelo createbounty '[author1.eosn, bounty1, "EOS", null]' -p author1.eosn
+  run cleos push action work.pomelo create '[author1.eosn, bounty1, "EOS", null]' -p author1.eosn
   [ $status -eq 0 ]
 
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].bounty_id')
@@ -37,7 +37,7 @@
 }
 
 @test "create already existing bounty" {
-  run cleos push action work.pomelo createbounty '[author2.eosn, bounty1, "USDT", null]' -p author2.eosn
+  run cleos push action work.pomelo create '[author2.eosn, bounty1, "USDT", null]' -p author2.eosn
   [ $status -eq 1 ]
   [[ "$output" =~ "[bounty_id] already exists" ]] || false
 }
@@ -471,7 +471,7 @@
 }
 
 @test "create, fund, publish, apply, approve, complete, deny, forfeit and close bounty2" {
-  run cleos push action work.pomelo createbounty '[author2.eosn, bounty2, "USDT", traditional]' -p author2.eosn
+  run cleos push action work.pomelo create '[author2.eosn, bounty2, "USDT", traditional]' -p author2.eosn
   [ $status -eq 0 ]
 
   run cleos transfer funder2 work.pomelo "2.0000 USDT" "bounty2,funder2.eosn" --contract tethertether
@@ -522,7 +522,7 @@
 
 
 @test "create and close bounty3 by admin" {
-  run cleos push action work.pomelo createbounty '[author2.eosn, bounty3, "EOS", null]' -p author2.eosn
+  run cleos push action work.pomelo create '[author2.eosn, bounty3, "EOS", null]' -p author2.eosn
   [ $status -eq 0 ]
 
   run cleos push action work.pomelo close '[bounty3]' -p work.pomelo

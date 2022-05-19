@@ -303,7 +303,7 @@ public:
     void deltoken( const symbol_code symcode );
 
     /**
-     * ## ACTION `createbounty`
+     * ## ACTION `create`
      *
      * - **authority**: `author_user_id`
      *
@@ -319,11 +319,11 @@ public:
      * ### Example
      *
      * ```bash
-     * $ cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT", null]' -p funder.eosn
+     * $ cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", null]' -p author.eosn
      * ```
      */
     [[eosio::action]]
-    void createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type );
+    void create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type );
 
     /**
      * ## ACTION `setstate`
@@ -361,7 +361,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p funder.eosn
+     * $ cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p author.eosn
      * ```
      */
     [[eosio::action]]
@@ -449,7 +449,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo release '[bounty1]' -p funder.eosn
+     * $ cleos push action work.pomelo release '[bounty1]' -p author.eosn
      * ```
      */
     [[eosio::action]]
@@ -471,7 +471,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo deny '[bounty1]' -p funder.eosn
+     * $ cleos push action work.pomelo deny '[bounty1]' -p author.eosn
      * ```
      */
     [[eosio::action]]
@@ -480,14 +480,14 @@ public:
     /**
      * ## ACTION `withdraw`
      *
-     * - **authority**: `account` (EOS account linked to EOSN Login's bounty funder or author)
+     * - **authority**: `account` (EOS account linked to EOSN Login's bounty author)
      *
      * Author withdraws funds from bounty in "pending" state (EOS account linked with EOSN Login)
      *
      * ### params
      *
      * - `{name} bounty_id` - bounty ID
-     * - `{name} receiver` - receiver account (must be linked to EOSN Login funder account)
+     * - `{name} receiver` - receiver account (must be linked to EOSN Login author account)
      *
      * ### example
      *

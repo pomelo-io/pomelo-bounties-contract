@@ -44,17 +44,17 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @user
 [[eosio::action]]
-void pomelo::createbounty( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
+void pomelo::create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
 {
     eosn::login::require_auth_user_id( author_user_id, get_configs().login_contract );
 
     const auto type = bounty_type ? *bounty_type : "traditional"_n;
-    check( BOUNTY_TYPES.count(type), "pomelo::createbounty: unknown [bounty_type]" );
+    check( BOUNTY_TYPES.count(type), "pomelo::create: unknown [bounty_type]" );
 
     // tables
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto itr = _bounties.find( bounty_id.value );
-    check( itr == _bounties.end(), "pomelo::createbounty: [bounty_id] already exists" );
+    check( itr == _bounties.end(), "pomelo::create: [bounty_id] already exists" );
 
     auto token = get_token( accepted_token );
 
