@@ -22,10 +22,22 @@
 }
 
 @test "create bounty by non-existing EOSN user" {
-  run cleos push action work.pomelo create '[author1, bounty1, "EOS", null]' -p author1
+  run cleos push action work.pomelo create '[author1, bounty1, "EOS", null]' -p author1.eosn
   echo "Output: $output"
   [ $status -eq 1 ]
   [[ "$output" =~ "[user_id] does not exist" ]] || false
+}
+
+@test "disable contract" {
+  run cleos push action work.pomelo setconfig '[disabled, null, null, null, []]' -p work.pomelo
+  [ $status -eq 0 ]
+
+  run cleos push action work.pomelo create '[author1, bounty4, "EOS", null]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "contract is under maintenance" ]] || false
+
+  run cleos push action work.pomelo setconfig '[ok, null, null, null, []]' -p work.pomelo
+  [ $status -eq 0 ]
 }
 
 @test "successfully create bounty" {
