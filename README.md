@@ -103,6 +103,11 @@ $ ./scripts/restart
 $ ./test.sh
 ```
 
+## State Diagram
+
+<img width="856" alt="image" src="https://user-images.githubusercontent.com/29608734/169178084-18addd99-4662-4e52-a268-f859633ce4ed.png">
+
+
 ## Definitions
 
 ### Roles
