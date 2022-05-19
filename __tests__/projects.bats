@@ -470,7 +470,7 @@
   [[ "$output" =~ "[bounty.status] must be" ]] || false
 }
 
-@test "create, fund, publish, apply, approve, complete, deny, terminate and close bounty2" {
+@test "create, fund, publish, apply, approve, complete, deny, forfeit and close bounty2" {
   run cleos push action work.pomelo createbounty '[author2.eosn, bounty2, "USDT", traditional]' -p author2.eosn
   [ $status -eq 0 ]
 
@@ -495,7 +495,7 @@
   run cleos push action work.pomelo deny '[bounty2]' -p author2.eosn
   [ $status -eq 0 ]
 
-  run cleos push action work.pomelo terminate '[bounty2]' -p author2.eosn
+  run cleos push action work.pomelo forfeit '[bounty2]' -p hunter2.eosn
   [ $status -eq 0 ]
 
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[1].status + .rows[1].approved_user_id')

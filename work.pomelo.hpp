@@ -368,11 +368,11 @@ public:
     void approve( const name bounty_id, const name applicant_user_id );
 
     /**
-     * ## ACTION `terminate`
+     * ## ACTION `forfeit`
      *
-     * - **authority**: `author_user_id`
+     * - **authority**: `hunter_user_id`
      *
-     * Author terminates the bounty and removes hunter from the bounty
+     * Hunter forfeits the bounty and puts the bounty into `open` state
      *
      * > Bounty state must be "started"
      *
@@ -383,18 +383,18 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo terminate '[bounty1]' -p author.eosn
+     * $ cleos push action work.pomelo forfeit '[bounty1]' -p hunter.eosn
      * ```
      */
     [[eosio::action]]
-    void terminate( const name bounty_id );
+    void forfeit( const name bounty_id );
 
     /**
      * ## ACTION `close`
      *
      * - **authority**: `author_user_id`
      *
-     * Author terminates the bounty and removes hunter from the bounty
+     * Author closes the bounty and puts it into `closed` state
      *
      * > Bounty state must be "open" or "pending"
      *

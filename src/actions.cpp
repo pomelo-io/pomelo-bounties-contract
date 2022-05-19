@@ -160,17 +160,17 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
 
 // @author
 [[eosio::action]]
-void pomelo::terminate( const name bounty_id )
+void pomelo::forfeit( const name bounty_id )
 {
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
-    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::terminate: [bounty_id] does not exists" );
+    const auto & bounty = _bounties.get( bounty_id.value, "pomelo::forfeit: [bounty_id] does not exists" );
 
     // require auth by author
-    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
 
     // validate input
-    check( bounty.status == "started"_n, "pomelo::terminate: [bounty.status] must be `started` to terminate" );
+    check( bounty.status == "started"_n, "pomelo::forfeit: [bounty.status] must be `started` to forfeit" );
 
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
