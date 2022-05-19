@@ -18,14 +18,8 @@ cleos push action work.pomelo createbounty '[author.eosn, bounty1, "USDT", null]
 # fund bounty
 cleos transfer myaccount work.pomelo "100.0000 USDT" "bounty1,funder.eosn" --contract tethertether
 
-# make bounty public
-cleos push action work.pomelo setstate '[bounty1, open]' -p work.pomelo
-
 # author select hunter for bounty
 cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p author.eosn
-
-# author terminate work on the bounty and 'fire' hunter
-cleos push action work.pomelo terminate '[bounty1]' -p author.eosn
 
 # author closes unsuccessful open/pending bounty putting it into "closed" state
 cleos push action work.pomelo close '[bounty1]' -p author.eosn
@@ -42,7 +36,7 @@ cleos push action work.pomelo deny '[bounty1]' -p author.eosn
 # /* no action */
 ```
 
-### `@user`
+### `@hunter`
 
 ```bash
 # before applying, hunter must link their EOS account with EOSN login
@@ -50,6 +44,9 @@ cleos push action login.eosn link '["hunter.eosn", "myaccount", "SIG_K1_KjnbJ2m2
 
 # hunter apply to bounty
 cleos push action work.pomelo apply '[bounty1, hunter.eosn]' -p hunter.eosn
+
+# hunter forfeits bounty
+cleos push action work.pomelo forfeit '[bounty1]' -p hunter.eosn
 
 # hunter signals work is completed (funds are auto-released after 72 hours if no explicit approval from author)
 cleos push action work.pomelo complete '[bounty1]' -p hunter.eosn
@@ -65,6 +62,16 @@ cleos push action work.pomelo claim '[bounty1]' -p myaccount
 cleos push action work.pomelo setconfig '[1000, "login.eosn", "fee.pomelo"]' -p work.pomelo
 cleos push action work.pomelo token '["4,EOS", "eosio.token", 10000, 1]' -p work.pomelo
 cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 0]' -p work.pomelo
+
+# make bounty public
+cleos push action work.pomelo publish '[bounty1]' -p work.pomelo
+
+# set bounty state
+cleos push action work.pomelo setstate '[bounty1, pending]' -p work.pomelo
+
+# close bounty
+cleos push action work.pomelo close '[bounty1]' -p work.pomelo
+
 ```
 
 ### `@author` (Optional)
@@ -104,7 +111,8 @@ $ ./test.sh
 |---------------|-------------------------------|
 | Backend       | Pomelo Backend                |
 | Admin         | Pomelo Admins                 |
-| Author        | Bounty Author                |
+| Author        | Bounty Author                 |
+| Hunter        | Bounty Hunter                 |
 | Funders       | Bounty Funders                |
 | SC            | Smart Contract                |
 
@@ -118,12 +126,14 @@ $ ./test.sh
 - [ACTION `token`](#action-token)
 - [ACTION `deltoken`](#action-deltoken)
 - [ACTION `createbounty`](#action-createbounty)
-- [ACTION `setbounty`](#action-setbounty)
 - [ACTION `setstate`](#action-setstate)
+- [ACTION `publish`](#action-publish)
+- [ACTION `withdraw`](#action-withdraw)
+- [ACTION `apply`](#action-apply)
 - [ACTION `approve`](#action-approve)
 - [ACTION `release`](#action-release)
-- [ACTION `withdraw`](#action-withdraw)
 - [ACTION `deny`](#action-deny)
-- [ACTION `apply`](#action-apply)
 - [ACTION `complete`](#action-complete)
+- [ACTION `forfeit`](#action-forfeit)
 - [ACTION `claim`](#action-claim)
+- [ACTION `close`](#action-close)
