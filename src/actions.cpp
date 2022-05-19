@@ -172,8 +172,8 @@ void pomelo::forfeit( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::forfeit: [bounty_id] does not exists" );
 
-    // require auth by hunter or admin
-    if( !has_auth(get_self()) ) eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
+    // require auth by hunter
+    eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "started"_n, "pomelo::forfeit: [bounty.status] must be `started` to forfeit" );
@@ -195,8 +195,8 @@ void pomelo::release( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::release: [bounty_id] does not exists" );
 
-    // require auth by author or admin
-    if( !has_auth(get_self()) ) eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    // require auth by author
+   eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "submitted"_n, "pomelo::release: [bounty.status] must be `submitted` to `release`" );
@@ -229,7 +229,7 @@ void pomelo::deny( const name bounty_id )
     });
 }
 
-// @author or @admin
+// @author
 [[eosio::action]]
 void pomelo::close( const name bounty_id )
 {
@@ -237,8 +237,8 @@ void pomelo::close( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::close: [bounty_id] does not exists" );
 
-    // require auth by admin or author
-    if( !has_auth(get_self()) ) eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    // require auth by author
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "pending"_n || bounty.status == "open"_n, "pomelo::close: [bounty.status] must be `pending` or `open`" );

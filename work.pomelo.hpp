@@ -370,7 +370,7 @@ public:
     /**
      * ## ACTION `forfeit`
      *
-     * - **authority**: `hunter_user_id` or `admin
+     * - **authority**: `hunter_user_id`
      *
      * Hunter forfeits the bounty and puts the bounty into `open` state
      *
@@ -392,7 +392,7 @@ public:
     /**
      * ## ACTION `close`
      *
-     * - **authority**: `author_user_id` or `admin`
+     * - **authority**: `author_user_id`
      *
      * Author closes the bounty and puts it into `closed` state
      *

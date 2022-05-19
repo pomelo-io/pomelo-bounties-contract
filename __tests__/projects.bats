@@ -563,7 +563,7 @@
   run cleos push action work.pomelo create '[author2.eosn, bounty3, "EOS", null]' -p author2.eosn
   [ $status -eq 0 ]
 
-  run cleos push action work.pomelo close '[bounty3]' -p work.pomelo
+  run cleos push action work.pomelo setstate '[bounty3, closed]' -p work.pomelo
   [ $status -eq 0 ]
 
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status')
