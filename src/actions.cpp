@@ -76,6 +76,29 @@ void pomelo::create( const name author_user_id, const name bounty_id, const symb
     });
 }
 
+// @author
+[[eosio::action]]
+void pomelo::setmetadata( const name bounty_id, const name key, const string value )
+{
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    auto & bounty = _bounties.get( bounty_id.value, "pomelo::setmetadata: [bounty_id] does not exist" );
+
+    // require auth by author
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    check( get_configs().metadata_keys.count(key), "pomelo::setmetadata: [metadata_key] not allowed" );
+
+    if (value == "") check( bounty.metadata.count(key), "pomelo::setmetadata: [metadata_key] not set" );
+    else check( bounty.metadata.count(key) == 0 || bounty.metadata.at(key) != value , "pomelo::setmetadata: [metadata_key] was not modified" );
+
+    // modify
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        if (value == "") row.metadata.erase(key);
+        else row.metadata[key] = value;
+        row.updated_at = current_time_point();
+    });
+}
+
 // @admin
 [[eosio::action]]
 void pomelo::setstate( const name bounty_id, const name status )
@@ -105,16 +128,18 @@ void pomelo::setstate( const name bounty_id, const name status )
 
 // @admin
 [[eosio::action]]
-void pomelo::setconfig( const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account )
+void pomelo::setconfig( const optional<name> status, const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account, const set<name> metadata_keys )
 {
     require_auth( get_self() );
 
     pomelo::configs_table _configs( get_self(), get_self().value );
     auto configs = _configs.get_or_default();
 
+    if ( status ) configs.status = *status;
     if ( fee ) configs.fee = *fee;
     if ( login_contract ) configs.login_contract = *login_contract;
     if ( fee_account ) configs.fee_account = *fee_account;
+    if ( metadata_keys.size() ) configs.metadata_keys = metadata_keys;
     _configs.set( configs, get_self() );
 }
 

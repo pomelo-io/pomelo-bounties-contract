@@ -9,7 +9,7 @@
 
 @test "init globals" {
 
-  run cleos push action work.pomelo setconfig '[500, "login.eosn", "fee.pomelo"]' -p work.pomelo
+  run cleos push action work.pomelo setconfig '[testing, 500, "login.eosn", "fee.pomelo", [url]]' -p work.pomelo
   echo "Output: $output"
   [ $status -eq 0 ]
 

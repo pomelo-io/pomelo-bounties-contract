@@ -136,7 +136,7 @@ public:
      * - `{name} status="pending"` - status (`pending/open/started/submitted/done`)
      * - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
      * - `{name} permissions="approval"` - bounty permissions (`approval` = "Funder must approve hunter to start work")
-     * - `{Metadata} metadata={}` - bounty metadata
+     * - `{map<name, string>} metadata={}` - bounty metadata
      * - `{time_point_sec} created_at` - created at time
      * - `{time_point_sec} updated_at` - updated at time
      * - `{time_point_sec} submitted_at` - submitted at time
@@ -176,7 +176,7 @@ public:
         name                    status = "pending"_n;
         name                    type = "traditional"_n;
         name                    permissions = "approval"_n;
-        map<string, string>     metadata;
+        map<name, string>       metadata;
         time_point_sec          created_at;
         time_point_sec          updated_at;
         time_point_sec          submitted_at;
@@ -215,7 +215,7 @@ public:
      *     "to": "work.pomelo",
      *     "ext_quantity": {"contract": "eosio.token", "quantity": "15.0000 EOS"},
      *     "fee": "1.0000 EOS",
-     *     "memo": "grant:grant1",
+     *     "memo": "bounty1,funder1.eosn",
      *     "value": 100.0,
      *     "trx_id": "3bf31f6c32a8663bf3fdb0993a2bf3784d181dc879545603dca2046f05e0c9e1",
      *     "created_at": "2020-12-06T00:00:00"
@@ -246,18 +246,21 @@ public:
      *
      * ### params
      *
+     * - `{name} status` - contract status: ok/testing/disabled
      * - `{uint64_t} fee` - platform fee (bips - 1/100 1%)
      * - `{name} login_contract` - EOSN Login contract
      * - `{name} fee_account` - fee account
+     * - `{set<name>} metadata_keys` - allowed metadata keys
      *
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo setconfig '[1000, "login.eosn", "fee.pomelo"]' -p work.pomelo
+     * $ cleos push action work.pomelo setconfig '[ok, 1000, "login.eosn", "fee.pomelo", ["url"]]' -p work.pomelo
+     * $ cleos push action work.pomelo setconfig '[disabled, null, null, null, []]' -p work.pomelo
      * ```
      */
     [[eosio::action]]
-    void setconfig( const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account );
+    void setconfig( const optional<name> status, const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account, const set<name> metadata_keys );
 
     /**
      * ## ACTION `token`
@@ -330,7 +333,7 @@ public:
      *
      * - **authority**: `get_self()`
      *
-     * Set grant or bounty state
+     * Set bounty state
      *
      * ### params
      *
@@ -345,6 +348,28 @@ public:
      */
     [[eosio::action]]
     void setstate( const name bounty_id, const name state );
+
+    /**
+     * ## ACTION `setmetadata`
+     *
+     * - **authority**: `author_user_id`
+     *
+     * Add/remove metadata. If metadata_value == "" - remove it.
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     * - `{name} metadata_key` - one of the allowed metadata keys
+     * - `{string} metadata_value` - metadata value
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io"]' -p author.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void setmetadata( const name bounty_id, const name metadata_key, const string metadata_value );
 
     /**
      * ## ACTION `approve`

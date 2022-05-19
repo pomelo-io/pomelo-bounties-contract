@@ -130,6 +130,7 @@ $ ./test.sh
 - [ACTION `token`](#action-token)
 - [ACTION `deltoken`](#action-deltoken)
 - [ACTION `create`](#action-create)
+- [ACTION `setmetadata`](#action-setmetadata)
 - [ACTION `setstate`](#action-setstate)
 - [ACTION `publish`](#action-publish)
 - [ACTION `withdraw`](#action-withdraw)
@@ -271,14 +272,16 @@ $ ./test.sh
 
 ### params
 
+- `{name} status` - contract status: ok/testing/disabled
 - `{uint64_t} fee` - platform fee (bips - 1/100 1%)
 - `{name} login_contract` - EOSN Login contract
 - `{name} fee_account` - fee account
+- `{set<name>} metadata_keys` - allowed metadata keys
 
 ### example
 
 ```bash
-$ cleos push action work.pomelo setconfig '[1000, "login.eosn", "fee.pomelo"]' -p work.pomelo
+$ cleos push action work.pomelo setconfig '[ok, 1000, "login.eosn", "fee.pomelo", [url]]' -p work.pomelo
 ```
 
 ## ACTION `token`
@@ -333,6 +336,24 @@ Create bounty
 
 ```bash
 $ cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", null]' -p author.eosn
+```
+
+## ACTION `setmetadata`
+
+- **authority**: `author_user_id`
+
+Add/remove metadata. If key == "" - remove.
+
+### params
+
+- `{name} bounty_id` - bounty ID
+- `{name} metadata_key` - one of the allowed metadata keys
+- `{string} metadata_value` - metadata value
+
+### example
+
+```bash
+$ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io"]' -p author.eosn
 ```
 
 ## ACTION `setstate`

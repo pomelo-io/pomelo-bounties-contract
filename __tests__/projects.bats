@@ -36,6 +36,36 @@
   [ $result = "bounty1" ]
 }
 
+@test "add metadata" {
+
+  run cleos push action work.pomelo setmetadata '[bounty1, wrongmeta, "https://github.com/pomelo-io/"]' -p author1.eosn
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[metadata_key] not allowed" ]] || false
+
+  run cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io/"]' -p author1.eosn
+  [ $status -eq 0 ]
+
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].metadata | length' )
+  [ $result = "1" ]
+}
+
+@test "remove metadata" {
+
+  run cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io/"]' -p author1.eosn -f
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[metadata_key] was not modified" ]] || false
+
+  run cleos push action work.pomelo setmetadata '[bounty1, url, ""]' -p author1.eosn
+  [ $status -eq 0 ]
+
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].metadata | length' )
+  [ $result = "0" ]
+
+  run cleos push action work.pomelo setmetadata '[bounty1, url, ""]' -p author1.eosn -f
+  [ $status -eq 1 ]
+  [[ "$output" =~ "[metadata_key] not set" ]] || false
+}
+
 @test "create already existing bounty" {
   run cleos push action work.pomelo create '[author2.eosn, bounty1, "USDT", null]' -p author2.eosn
   [ $status -eq 1 ]
