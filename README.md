@@ -105,7 +105,7 @@ $ ./test.sh
 
 ## State Diagram
 
-<img width="877" alt="image" src="https://user-images.githubusercontent.com/29608734/169372492-91c1ef50-2974-4178-a4d9-9a44726288df.png">
+<img width="843" alt="image" src="https://user-images.githubusercontent.com/29608734/169374374-ad0129cd-60e7-4235-8e25-ddf7d659268a.png">
 
 
 ## Definitions
