@@ -1,5 +1,8 @@
 # 🍈 Pomelo for Work (Bounties) - EOSIO Smart Contract
 
+![flow](https://user-images.githubusercontent.com/550895/169887932-4df6c5f4-0eb2-480e-ac91-40f3145a0a80.jpg)
+
+
 ## Security Audits
 
 - N/A
