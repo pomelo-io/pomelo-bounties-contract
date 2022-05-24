@@ -59,9 +59,12 @@ cleos push action work.pomelo claim '[bounty1]' -p myaccount
 
 ```bash
 # configure app
-cleos push action work.pomelo setconfig '[1000, "login.eosn", "fee.pomelo"]' -p work.pomelo
-cleos push action work.pomelo token '["4,EOS", "eosio.token", 10000, 1]' -p work.pomelo
-cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 0]' -p work.pomelo
+cleos push action work.pomelo setconfig '[ok, 1000, login.eosn, fee.pomelo, [url]]' -p work.pomelo
+cleos push action work.pomelo token '["4,EOS", eosio.token, 10000, 1]' -p work.pomelo
+cleos push action work.pomelo token '["4,USDT", tethertether, 10000, 0]' -p work.pomelo
+
+# disable contract
+cleos push action work.pomelo setconfig '[disabled, null, null, null, []]' -p work.pomelo
 
 # make bounty public
 cleos push action work.pomelo publish '[bounty1]' -p work.pomelo
@@ -78,9 +81,9 @@ cleos push action work.pomelo close '[bounty1]' -p work.pomelo
 
 ```bash
 # set bounty metadata
-cleos push action work.pomelo setmetadata '[bounty1, {"url": "https://github.com/pomelo-io/pomelo-bounties-contract/issues/1"}]' -p author.eosn
+cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io/"]' -p author.eosn
 
-# author withdraws funds bounty in "pending" state (EOS account linked with EOSN Login)
+# author withdraws funds bounty in "pending" state (EOS account `myaccount` should be linked to `author.eosn` EOSN Login)
 cleos push action work.pomelo withdraw '[bounty1]' -p myaccount
 ```
 
@@ -122,10 +125,13 @@ $ ./test.sh
 
 ## Table of Content
 
+### Tables
 - [TABLE `configs`](#table-configs)
-- [TABLE `bounties`](#tables-bounties)
+- [TABLE `bounties`](#table-bounties)
 - [TABLE `transfers`](#table-transfers)
 - [TABLE `tokens`](#table-tokens)
+
+### Actions
 - [ACTION `setconfig`](#action-setconfig)
 - [ACTION `token`](#action-token)
 - [ACTION `deltoken`](#action-deltoken)
@@ -142,6 +148,8 @@ $ ./test.sh
 - [ACTION `forfeit`](#action-forfeit)
 - [ACTION `claim`](#action-claim)
 - [ACTION `close`](#action-close)
+
+### Action Notifications
 - [TRANSFER NOTIFY HANDLER `on_transfer`](#transfer-notify-handler-on_transfer)
 
 
@@ -202,7 +210,7 @@ $ ./test.sh
 - `{name} status="pending"` - status (`pending/open/started/submitted/done`)
 - `{name} type="traditional"` - bounty type (`traditional` = "1 worker at a time, 1 is paid out")
 - `{name} permissions="approval"` - bounty permissions (`approval` = "Funder must approve hunter to start work")
-- `{Metadata} metadata={}` - bounty metadata
+- `{map<name, string>} metadata={}` - bounty metadata
 - `{time_point_sec} created_at` - created at time
 - `{time_point_sec} updated_at` - updated at time
 - `{time_point_sec} submitted_at` - submitted at time
@@ -231,7 +239,7 @@ $ ./test.sh
 ```
 
 
-## TABLE `transfer`
+## TABLE `transfers`
 
 - **scope**: `{name} get_self()`
 
@@ -360,12 +368,12 @@ $ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/
 
 - **authority**: `get_self()`
 
-Set grant or bounty state
+Set bounty state. Shouldn't be used for normal flows. Only to override by admin.
 
 ### params
 
 - `{name} bounty_id` - bounty ID
-- `{name} status` - status `pending/published/banned/retired/denied'
+- `{name} state` - new state `pending/closed/open/started/submitted/released/done'
 
 ### example
 
@@ -377,7 +385,7 @@ $ cleos push action work.pomelo setstate '[bounty1, published]' -p work.pomelo
 
 - **authority**: `hunter_user_id`
 
-Hunter forfeits the bounty and puts the bounty into `open` state
+Hunter forfeits the bounty, puts the bounty into `open` state and removes himself from the list of applicants
 
 > Bounty state must be "started"
 
@@ -411,7 +419,7 @@ $ cleos push action work.pomelo close '[bounty1]' -p author.eosn
 
 ## ACTION `publish`
 
-- **authority**: `admin`
+- **authority**: `get_self()`
 
 Admin publishes the bounty making it open for applications
 
@@ -433,7 +441,7 @@ $ cleos push action work.pomelo publish '[bounty1]' -p work.pomelo
 
 Author releases funds to hunter when bounty is completed
 
-> Bounty state must be "completed"
+> Bounty state must be "submitted"
 
 ### params
 
@@ -451,7 +459,7 @@ $ cleos push action work.pomelo release '[bounty1]' -p author.eosn
 
 Author denies completed bounty
 
-> Bounty state is reverted back to "progress"
+> Bounty state is reverted back to "started"
 
 ### params
 
@@ -467,7 +475,7 @@ $ cleos push action work.pomelo deny '[bounty1]' -p author.eosn
 
 - **authority**: `account` (EOS account linked to EOSN Login's bounty author)
 
-Author withdraws funds from bounty in "pending" state (EOS account linked with EOSN Login)
+Author withdraws funds from bounty in "pending" or "closed" state (EOS account linked with EOSN Login)
 
 ### params
 
@@ -497,11 +505,28 @@ Hunter apply to bounty
 $ cleos push action work.pomelo apply '[bounty1, hunter.eosn]' -p hunter.eosn
 ```
 
+## ACTION `approve`
+
+- **authority**: `author_id`
+
+Author approves one of the hunters who applied for bounty
+
+### params
+
+- `{name} bounty_id` - bounty ID
+- `{name} applicant_user_id` - hunter user ID
+
+### example
+
+```bash
+$ cleos push action work.pomelo approve '[bounty1, hunter.eosn]' -p hunter.eosn
+```
+
 ## ACTION `complete`
 
 - **authority**: `user_id`
 
-hunter signals work is completed
+Hunter signals the work is completed
 
 > Funds are auto-released after 72 hours if no explicit approval from author
 
@@ -541,4 +566,9 @@ Process incoming transfer
 - `{name} from` - from EOS account (donation sender)
 - `{name} to` - to EOS account (process only incoming)
 - `{asset} quantity` - quantity received
-- `{string} memo` - transfer memo, i.e. "autho.eosn:123"
+- `{string} memo` - transfer memo, i.e. "bounty1,author.eosn"
+### example
+
+```bash
+$ cleos transfer author work.pomelo "5.0000 EOS" "bounty1,author.eosn" -p author
+```
