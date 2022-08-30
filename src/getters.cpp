@@ -10,7 +10,7 @@ extended_asset pomelo::calculate_fee( const extended_asset ext_quantity )
 pomelo::configs_row pomelo::get_configs()
 {
     pomelo::configs_table _configs( get_self(), get_self().value );
-    check( _configs.exists() || _configs.get().status == "ok"_n ||  _configs.get().status == "testing"_n, "pomelo::get_global: contract is under maintenance");
+    check( _configs.exists() && (_configs.get().status == "ok"_n ||  _configs.get().status == "testing"_n), "pomelo::get_global: contract is under maintenance");
     return _configs.get();
 }
 
