@@ -3,7 +3,9 @@
 
 extended_asset pomelo::calculate_fee( const extended_asset ext_quantity )
 {
-    const int64_t amount = ext_quantity.quantity.amount * get_configs().fee / 10000;
+    const int64_t deposit = ext_quantity.quantity.amount;
+    const double rate = 1.0 + static_cast<double>(get_configs().fee) / 10000.0;
+    const int64_t amount = deposit - (deposit / rate);
     return { amount, ext_quantity.get_extended_symbol() };
 }
 
