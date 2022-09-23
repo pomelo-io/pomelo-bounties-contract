@@ -7,3 +7,4 @@
 #include "src/getters.cpp"
 #include "src/notifiers.cpp"
 #include "src/utils.cpp"
+#include "src/logs.cpp"

@@ -150,3 +150,43 @@ title: publish
 summary: Publish bounty
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
+
+<h1 class="contract">depositlog</h1>
+---
+spec_version: "0.2.0"
+title: depositlog
+summary: Log deposit
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">createlog</h1>
+---
+spec_version: "0.2.0"
+title: createlog
+summary: Log bounty creation
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">statelog</h1>
+---
+spec_version: "0.2.0"
+title: statelog
+summary: Log bounty state change
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">claimlog</h1>
+---
+spec_version: "0.2.0"
+title: claimlog
+summary: Log bounty claims
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---
+
+<h1 class="contract">withdrawlog</h1>
+---
+spec_version: "0.2.0"
+title: withdrawlog
+summary: Log bounty withdrawals
+icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
+---

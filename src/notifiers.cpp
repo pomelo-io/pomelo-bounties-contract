@@ -59,6 +59,9 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
 
     // save for logging purposes
     save_transfer( bounty_id, funder_user_id, from, get_self(), amount, fee.quantity, memo, value );
+
+    pomelo::depositlog_action depositlog( get_self(), { get_self(), "active"_n });
+    depositlog.send( bounty_id, funder_user_id, from, amount, fee.quantity, value, memo );
 }
 
 void pomelo::save_transfer( const name bounty_id, const name funder_user_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value )

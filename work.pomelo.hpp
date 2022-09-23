@@ -605,6 +605,26 @@ public:
     [[eosio::action]]
     void cleartable( const name table_name, const optional<name> scope, const optional<uint64_t> max_rows );
 
+
+    [[eosio::action]]
+    void depositlog( const name bounty_id, const name funder_user_id, const name from, const extended_asset ext_quantity, const asset fee, const double value, const string& memo );
+    [[eosio::action]]
+    void createlog( const name bounty_id, const name author_user_id, extended_symbol ext_sym, const name type, const name permissions );
+    [[eosio::action]]
+    void statelog( const name bounty_id, const name status, const name action );
+    [[eosio::action]]
+    void claimlog( const name bounty_id, const name receiver, const extended_asset ext_quantity, asset fee, const name status, const name worker_user_id, const uint32_t days_since_created );
+    [[eosio::action]]
+    void withdrawlog( const name bounty_id, const name status, const name author_user_id, const name receiver, const extended_asset refund );
+
+
+    using depositlog_action = eosio::action_wrapper<"depositlog"_n, &pomelo::depositlog>;
+    using createlog_action = eosio::action_wrapper<"createlog"_n, &pomelo::createlog>;
+    using statelog_action = eosio::action_wrapper<"statelog"_n, &pomelo::statelog>;
+    using claimlog_action = eosio::action_wrapper<"claimlog"_n, &pomelo::claimlog>;
+    using withdrawlog_action = eosio::action_wrapper<"withdrawlog"_n, &pomelo::withdrawlog>;
+
+
 private:
     // getters
     extended_asset calculate_fee( const extended_asset ext_quantity );

@@ -74,6 +74,10 @@ void pomelo::create( const name author_user_id, const name bounty_id, const symb
         row.created_at = current_time_point();
         row.updated_at = current_time_point();
     });
+    pomelo::createlog_action createlog( get_self(), { get_self(), "active"_n });
+    createlog.send( bounty_id, author_user_id, extended_symbol{ token.sym, token.contract }, type, "approval"_n );
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "pending"_n, "create"_n );
 }
 
 // @author
@@ -124,6 +128,9 @@ void pomelo::setstate( const name bounty_id, const name status )
         row.status = status;
         row.updated_at = current_time_point();
     });
+
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, status, "setstate"_n );
 }
 
 // @admin
@@ -187,6 +194,9 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
         row.status = "started"_n;
         row.updated_at = current_time_point();
     });
+
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "started"_n, "approve"_n );
 }
 
 // @author or @admin
@@ -210,6 +220,8 @@ void pomelo::forfeit( const name bounty_id )
         row.status = "open"_n;
         row.updated_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "open"_n, "forfeit"_n );
 }
 
 // @author or @admin
@@ -231,6 +243,8 @@ void pomelo::release( const name bounty_id )
         row.status = "released"_n;
         row.updated_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "released"_n, "release"_n );
 }
 
 // @author
@@ -252,6 +266,8 @@ void pomelo::deny( const name bounty_id )
         row.status = "started"_n;
         row.updated_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "started"_n, "deny"_n );
 }
 
 // @author
@@ -273,6 +289,8 @@ void pomelo::close( const name bounty_id )
         row.status = "closed"_n;
         row.updated_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "closed"_n, "close"_n );
 }
 
 // @admin
@@ -294,6 +312,8 @@ void pomelo::publish( const name bounty_id )
         row.status = "open"_n;
         row.updated_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "open"_n, "publish"_n );
 }
 
 // @author
@@ -326,6 +346,8 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
         row.funders = {};
         row.updated_at = current_time_point();
     });
+    pomelo::withdrawlog_action withdrawlog( get_self(), { get_self(), "active"_n });
+    withdrawlog.send( bounty_id, bounty.status, bounty.author_user_id, receiver, refund );
 }
 
 // @applicant
@@ -372,6 +394,8 @@ void pomelo::complete( const name bounty_id )
         row.updated_at = current_time_point();
         row.submitted_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "submitted"_n, "complete"_n );
 }
 
 // @applicant
@@ -416,4 +440,10 @@ void pomelo::claim( const name bounty_id, const name receiver )
         row.updated_at = current_time_point();
         row.completed_at = current_time_point();
     });
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, "done"_n, "claim"_n );
+
+    const uint32_t sec_since_created = current_time_point().sec_since_epoch() - bounty.created_at.sec_since_epoch();
+    pomelo::claimlog_action claimlog( get_self(), { get_self(), "active"_n });
+    claimlog.send( bounty_id, receiver, bounty.amount, bounty.fee.quantity, bounty.status, bounty.approved_user_id, sec_since_created / DAY );
 }
