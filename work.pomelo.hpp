@@ -602,28 +602,51 @@ public:
     [[eosio::on_notify("*::transfer")]]
     void on_transfer( const name from, const name to, const asset quantity, const string memo );
 
-    [[eosio::action]]
-    void cleartable( const name table_name, const optional<name> scope, const optional<uint64_t> max_rows );
-
 
     [[eosio::action]]
     void depositlog( const name bounty_id, const name funder_user_id, const name from, const extended_asset ext_quantity, const asset fee, const double value, const string& memo );
+
     [[eosio::action]]
     void createlog( const name bounty_id, const name author_user_id, extended_symbol ext_sym, const name type, const name permissions );
+
     [[eosio::action]]
     void statelog( const name bounty_id, const name status, const name action );
+
     [[eosio::action]]
     void claimlog( const name bounty_id, const name receiver, const extended_asset ext_quantity, asset fee, const name status, const name worker_user_id, const uint32_t days_since_created );
+
     [[eosio::action]]
     void withdrawlog( const name bounty_id, const name status, const name author_user_id, const name receiver, const extended_asset refund );
 
+    // DEBUG (used to help testing)
+    #ifdef DEBUG
+    [[eosio::action]]
+    void cleartable( const name table_name, const optional<name> scope, const optional<uint64_t> max_rows );
+    #endif
+
+    // action wrappers
+    using setconfig_action = eosio::action_wrapper<"setconfig"_n, &pomelo::setconfig>;
+    using token_action = eosio::action_wrapper<"token"_n, &pomelo::token>;
+    using deltoken_action = eosio::action_wrapper<"deltoken"_n, &pomelo::deltoken>;
+    using create_action = eosio::action_wrapper<"create"_n, &pomelo::create>;
+    using setstate_action = eosio::action_wrapper<"setstate"_n, &pomelo::setstate>;
+    using setmetadata_action = eosio::action_wrapper<"setmetadata"_n, &pomelo::setmetadata>;
+    using approve_action = eosio::action_wrapper<"approve"_n, &pomelo::approve>;
+    using forfeit_action = eosio::action_wrapper<"forfeit"_n, &pomelo::forfeit>;
+    using close_action = eosio::action_wrapper<"close"_n, &pomelo::close>;
+    using publish_action = eosio::action_wrapper<"publish"_n, &pomelo::publish>;
+    using release_action = eosio::action_wrapper<"release"_n, &pomelo::release>;
+    using deny_action = eosio::action_wrapper<"deny"_n, &pomelo::deny>;
+    using withdraw_action = eosio::action_wrapper<"withdraw"_n, &pomelo::withdraw>;
+    using apply_action = eosio::action_wrapper<"apply"_n, &pomelo::apply>;
+    using complete_action = eosio::action_wrapper<"complete"_n, &pomelo::complete>;
+    using claim_action = eosio::action_wrapper<"claim"_n, &pomelo::claim>;
 
     using depositlog_action = eosio::action_wrapper<"depositlog"_n, &pomelo::depositlog>;
     using createlog_action = eosio::action_wrapper<"createlog"_n, &pomelo::createlog>;
     using statelog_action = eosio::action_wrapper<"statelog"_n, &pomelo::statelog>;
     using claimlog_action = eosio::action_wrapper<"claimlog"_n, &pomelo::claimlog>;
     using withdrawlog_action = eosio::action_wrapper<"withdrawlog"_n, &pomelo::withdrawlog>;
-
 
 private:
     // getters
@@ -636,16 +659,19 @@ private:
     double calculate_value( const extended_asset ext_quantity );
     name get_user_id( const name account );
     bool is_user( const name user_id );
+    checksum256 get_trx_id();
+    pair<name, name> parse_memo(const string& memo);
 
     // notifiers
     void deposit_bounty( const name bounty_id, const name user_id, const name from, const extended_asset ext_quantity, const string memo );
     void save_transfer( const name bounty_id, const name funder_user_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value );
 
     // utils
+    void transfer( const name from, const name to, const extended_asset value, const string memo );
+
+    // DEBUG (used to help testing)
+    #ifdef DEBUG
     template <typename T>
     void clear_table( T& table, uint64_t rows_to_clear );
-    void transfer( const name from, const name to, const extended_asset value, const string memo );
-    checksum256 get_trx_id();
-    pair<name, name> parse_memo(const string& memo);
-    void update_status( const uint32_t index, const uint32_t count ); // update counters in status singleton
+    #endif
 };

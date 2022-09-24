@@ -5,7 +5,6 @@
 #include <eosio/crypto.hpp>
 #include <math.h>
 
-namespace sx {
 namespace utils {
 
     using eosio::asset;
@@ -42,7 +41,7 @@ namespace utils {
      *
      * ```c++
      * const asset quantity = asset{10000, symbol{"EOS", 4}};
-     * const double amount = sx::utils::asset_to_double( quantity );
+     * const double amount = utils::asset_to_double( quantity );
      * // => 1.0
      * ```
      */
@@ -71,7 +70,7 @@ namespace utils {
      * ```c++
      * const double amount = 1.0;
      * const symbol sym = symbol{"EOS", 4};
-     * const asset token = sx::utils::double_to_asset( amount, sym );
+     * const asset token = utils::double_to_asset( amount, sym );
      * // => "1.0000 EOS"
      * ```
      */
@@ -102,14 +101,14 @@ namespace utils {
      * const asset b = asset{10000, symbol{"EOS", 4}};
      *
      * // Sort
-     * const auto[ token0, token1 ] = sx::utils::sort_tokens( a, b );
+     * const auto[ token0, token1 ] = utils::sort_tokens( a, b );
      * // token0 => "1.0000 EOS"
      * // token1 => "1.0000 USDT"
      * ```
      */
     static std::pair<asset, asset> sort_tokens( const asset a, const asset b )
     {
-        eosio::check(a.symbol != b.symbol, "SX.Utils: IDENTICAL_ASSETS");
+        eosio::check(a.symbol != b.symbol, "get_balance::sort_tokens: IDENTICAL_ASSETS");
         return a.symbol < b.symbol ? std::pair<asset, asset>{a, b} : std::pair<asset, asset>{b, a};
     }
 
@@ -130,7 +129,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const auto[ token0, token1 ] = sx::utils::split( "foo,bar", "," );
+     * const auto[ token0, token1 ] = utils::split( "foo,bar", "," );
      * // token0 => "foo"
      * // token1 => "bar"
      * ```
@@ -203,7 +202,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const symbol_code symcode = sx::utils::parse_symbol_code( "USDT" );
+     * const symbol_code symcode = utils::parse_symbol_code( "USDT" );
      * // symcode => symbol_code{"USDT"}
      * ```
      */
@@ -233,7 +232,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const symbol sym = sx::utils::parse_symbol( "4,USDT" );
+     * const symbol sym = utils::parse_symbol( "4,USDT" );
      * // sym => symbol{"USDT",4}
      * ```
      */
@@ -272,7 +271,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const asset out = sx::utils::parse_asset( "-1.0000 USDT" );
+     * const asset out = utils::parse_asset( "-1.0000 USDT" );
      * // out => asset{-10000, symbol{"USDT",4}}
      * ```
      */
@@ -326,7 +325,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const extended_symbol ext_sym = sx::utils::parse_extended_symbol( "4,USDT@tethertether" );
+     * const extended_symbol ext_sym = utils::parse_extended_symbol( "4,USDT@tethertether" );
      * // ext_sym => extended_symbol{symbol{"USDT",4}, "tethertether"_n}
      * ```
      */
@@ -358,7 +357,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const extended_asset ext_out = sx::utils::parse_extended_asset( "-1.0000 USDT@tethertether" );
+     * const extended_asset ext_out = utils::parse_extended_asset( "-1.0000 USDT@tethertether" );
      * // ext_sym => extended_symbol{asset{-10000, symbol{"USDT",4}}, "tethertether"_n}
      * ```
      */
@@ -395,7 +394,7 @@ namespace utils {
      *
      * ```c++
      * const extended_symbol ext_sym { symbol{"USDT", 4}, "tethertether"_n };
-     * const auto balance = sx::utils::get_balance(ext_sym).quantity;
+     * const auto balance = utils::get_balance(ext_sym).quantity;
      * eosio::check(balance.is_valid(), "Balance not opened");
 
      * ```
@@ -412,7 +411,7 @@ namespace utils {
         accounts_table _accounts( ext_sym.get_contract(), owner.value );
         auto it = _accounts.find( ext_sym.get_symbol().code().raw() );
         if(it == _accounts.end()) return { 0, ext_sym };
-        eosio::check( ext_sym.get_symbol() == it->balance.symbol, "SX.Utils: extended symbol mismatch balance");
+        eosio::check( ext_sym.get_symbol() == it->balance.symbol, "utils::get_balance: extended symbol mismatch balance");
 
         return { it->balance.amount, ext_sym };
     }
@@ -435,7 +434,7 @@ namespace utils {
      *
      * ```c++
      * const extended_symbol ext_sym { symbol{"USDT", 4}, "tethertether"_n };
-     * const auto supply = sx::utils::get_supply(ext_sym);
+     * const auto supply = utils::get_supply(ext_sym);
      * eosio::check(balance.is_valid(), "Token doesn't exist on this contract");
      * ```
      */
@@ -472,7 +471,7 @@ namespace utils {
      * ### example
      *
      * ```c++
-     * const auto rnd = sx::utils::get_hashed_nonce(12345);
+     * const auto rnd = utils::get_hashed_nonce(12345);
      * ```
      */
     static uint64_t get_hashed_nonce( uint64_t nonce ){
@@ -484,4 +483,3 @@ namespace utils {
     }
 
 };
-}

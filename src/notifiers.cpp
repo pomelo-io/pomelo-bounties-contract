@@ -14,7 +14,6 @@ void pomelo::on_transfer( const name from, const name to, const asset quantity, 
     // handle token transfer
     const extended_asset ext_quantity = { quantity, get_first_receiver() };
     deposit_bounty( bounty_id, user_id, from, ext_quantity, memo );
-    update_status(0, 1);
 }
 
 void pomelo::deposit_bounty( const name bounty_id, const name user_id, const name from, const extended_asset ext_quantity, const string memo )

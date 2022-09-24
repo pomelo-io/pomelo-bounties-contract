@@ -1,5 +1,26 @@
 #include <oracle.defi/oracle.defi.hpp>
+#include <eosio/transaction.hpp>
+#include <eosio/crypto.hpp>
+#include <utils/utils.hpp>
 
+checksum256 pomelo::get_trx_id()
+{
+    size_t size = transaction_size();
+    char buf[size];
+    size_t read = read_transaction( buf, size );
+    check( size == read, "pomelo::get_trx_id: read_transaction failed");
+    return sha256( buf, read );
+}
+
+pair<name, name> pomelo::parse_memo(const string& memo)
+{
+    if (memo.length() == 0) return {};
+    auto parts = utils::split(memo, ",");
+    if (parts.size() > 2) return {};
+    name bounty = utils::parse_name(parts[0]);
+    name user_id = parts.size() == 2 ? utils::parse_name(parts[1]) : name{};
+    return { bounty, user_id };
+}
 
 extended_asset pomelo::calculate_fee( const extended_asset ext_quantity )
 {
