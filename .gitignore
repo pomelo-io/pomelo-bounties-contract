@@ -6,3 +6,5 @@ nodeos
 *.abi
 *.wasm
 stderr
+!/include/**/*.wasm
+!/include/**/*.abi
