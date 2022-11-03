@@ -21,21 +21,22 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
     const auto fee_account = get_configs().fee_account;
 
     pomelo::bounties_table _bounties( get_self(), get_self().value );
-    auto & bounty = _bounties.get(bounty_id.value, "pomelo::deposit_bounty: [bounty_id] does not exists");
+    auto bounty = _bounties.find(bounty_id.value);
+    check(bounty != _bounties.end(), "pomelo::deposit_bounty: [bounty_id=" + bounty_id.to_string() + "] does not exists");
 
     const asset quantity = ext_quantity.quantity;
     const symbol_code symcode = quantity.symbol.code();
     const int64_t min_amount = get_token( ext_quantity ).min_amount;
-    const name funder_user_id = user_id.value ? user_id : bounty.author_user_id;    //if no user id specified - assume it came from the author
+    const name funder_user_id = user_id.value ? user_id : bounty->author_user_id;    //if no user id specified - assume it came from the author
 
     // validate incoming transfer
     check( quantity.amount >= min_amount, "pomelo::deposit_bounty: [quantity=" + ext_quantity.quantity.to_string() + "] is less than [tokens.min_amount=" + to_string( min_amount ) + "]");
 
     // TO-DO: bounty can only deposit when state == "pending/open/started"
-    check( STATUS_DEPOSIT_TYPES.find(bounty.status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for funding");
+    check( STATUS_DEPOSIT_TYPES.find(bounty->status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for funding");
 
     // check incoming token deposit
-    check( bounty.amount.get_extended_symbol() == ext_quantity.get_extended_symbol(), "pomelo::deposit_bounty: quantity extended symbol not allowed");
+    check( bounty->amount.get_extended_symbol() == ext_quantity.get_extended_symbol(), "pomelo::deposit_bounty: quantity extended symbol not allowed");
     check( is_token_enabled( symcode ), "pomelo::deposit_bounty: [token=" + symcode.to_string() + "] is not supported");
 
     // require EOSN linked login to allow withdrawals
