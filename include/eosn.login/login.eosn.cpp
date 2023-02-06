@@ -2,7 +2,7 @@
 #include <eosio.system/eosio.system.hpp>
 #include <eosio.token/eosio.token.hpp>
 #include <eosio/crypto.hpp>
-#include <pomelo.play/play.pomelo.hpp>
+// #include <pomelo.play/play.pomelo.hpp>
 #include <signature/signature.hpp>
 
 #include "login.eosn.hpp"
@@ -147,13 +147,13 @@ void login::link( const name user_id, const name account, const signature sig)
         row.user_id = user_id;
     });
 
-    if (is_account("play.pomelo"_n)) {
-        const auto play_balance = pomelo::playtoken::get_balance("play.pomelo"_n, account, symbol_code("PLAY"));
-        if ( !play_balance.symbol.is_valid() ) {  // if already issued before - quietly don't issue
-            pomelo::playtoken::faucet_action faucet( "play.pomelo"_n, { "play.pomelo"_n, "active"_n });
-            faucet.send( account, symbol_code("PLAY") );
-        }
-    }
+    // if (is_account("play.pomelo"_n)) {
+    //     const auto play_balance = pomelo::playtoken::get_balance("play.pomelo"_n, account, symbol_code("PLAY"));
+    //     if ( !play_balance.symbol.is_valid() ) {  // if already issued before - quietly don't issue
+    //         pomelo::playtoken::faucet_action faucet( "play.pomelo"_n, { "play.pomelo"_n, "active"_n });
+    //         faucet.send( account, symbol_code("PLAY") );
+    //     }
+    // }
 }
 
 [[eosio::action]]
