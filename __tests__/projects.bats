@@ -618,13 +618,34 @@
 }
 
 
-# @test "create bounty4 by admin" {
-#   run cleos push action work.pomelo create '[author2.eosn, bounty3, "EOS", null]' -p author2.eosn
-#   [ $status -eq 0 ]
+@test "apply syncbounty on bounty4 by admin" {
 
-#   run cleos push action work.pomelo setstate '[bounty3, closed]' -p work.pomelo
-#   [ $status -eq 0 ]
+  run cleos push action work.pomelo syncbounty '[bounty3, open, [], null, "2021-01-01T00:00:00", null, null]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status')
+  [ $result = "open" ]
 
-#   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status')
-#   [ $result = "closed" ]
-# }
+  run cleos push action work.pomelo syncbounty '[bounty3, open, [hunter1.eosn, hunter2.eosn], null, "2021-01-01T00:00:00", null, null]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status + " " + .rows[2].applicant_user_ids[0] + " " + .rows[2].applicant_user_ids[1]')
+  [ "$result" = "open hunter1.eosn hunter2.eosn" ]
+
+  run cleos push action work.pomelo syncbounty '[bounty3, started, [hunter1.eosn, hunter2.eosn], hunter1.eosn, "2021-01-01T00:00:00", null, null]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status + " " + .rows[2].applicant_user_ids[0] + " " + .rows[2].applicant_user_ids[1] + " " + .rows[2].approved_user_id')
+  [ "$result" = "started hunter1.eosn hunter2.eosn hunter1.eosn" ]
+
+  run cleos push action work.pomelo syncbounty '[bounty3, started, [hunter1.eosn, hunter2.eosn], hunter1.eosn, "2021-01-01T00:00:00", "2021-02-01T00:00:00", "2021-03-01T00:00:00"]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status + " " + .rows[2].applicant_user_ids[0] + " " + .rows[2].applicant_user_ids[1] + " " + .rows[2].approved_user_id')
+  [ "$result" = "started hunter1.eosn hunter2.eosn hunter1.eosn" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].updated_at + " " + .rows[2].submitted_at + " " + .rows[2].completed_at')
+  [ "$result" = "2021-01-01T00:00:00 2021-02-01T00:00:00 2021-03-01T00:00:00" ]
+
+  run cleos push action work.pomelo syncbounty '[bounty3, open, [], null, "2021-01-01T00:00:00", null, null]' -p work.pomelo
+  [ $status -eq 0 ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].status + .rows[2].approved_user_id')
+  [ "$result" = "open" ]
+  result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[2].applicant_user_ids | length')
+  [ "$result" = "0" ]
+}
