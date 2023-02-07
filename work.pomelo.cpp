@@ -164,7 +164,7 @@ void pomelo::syncbounty(const name bounty_id, const name status, const vector<na
     // modify
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
         row.status = status;
-        row.applicant_user_ids = applicant_user_ids;
+        row.applicant_user_ids = set<name>( applicant_user_ids.begin(), applicant_user_ids.end() );
         row.updated_at = updated_at;
         if (approved_user_id) row.approved_user_id = *approved_user_id;
         if (submitted_at) row.submitted_at = *submitted_at;
