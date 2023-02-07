@@ -1,366 +1,296 @@
 {
-    "____comment": "This file was generated with eosio-abigen. DO NOT EDIT ",
-    "version": "eosio::abi/1.1",
-    "types": [],
-    "structs": [
-        {
-            "name": "accounts_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "account",
-                    "type": "name"
-                },
-                {
-                    "name": "user_id",
-                    "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "config_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "notifiers",
-                    "type": "name[]"
-                }
-            ]
-        },
-        {
-            "name": "configsocial",
-            "base": "",
-            "fields": [
-                {
-                    "name": "social",
-                    "type": "name"
-                },
-                {
-                    "name": "weight",
-                    "type": "uint32"
-                }
-            ]
-        },
-        {
-            "name": "create",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "public_keys",
-                    "type": "public_key[]"
-                }
-            ]
-        },
-        {
-            "name": "deluser",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "link",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "account",
-                    "type": "name"
-                },
-                {
-                    "name": "sig",
-                    "type": "signature"
-                }
-            ]
-        },
-        {
-            "name": "proof",
-            "base": "",
-            "fields": [
-                {
-                    "name": "account",
-                    "type": "name"
-                },
-                {
-                    "name": "nonce",
-                    "type": "uint64"
-                },
-                {
-                    "name": "data",
-                    "type": "string?"
-                }
-            ]
-        },
-        {
-            "name": "proofs_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "account",
-                    "type": "name"
-                },
-                {
-                    "name": "nonce",
-                    "type": "uint64"
-                },
-                {
-                    "name": "data",
-                    "type": "string"
-                },
-                {
-                    "name": "created_at",
-                    "type": "time_point_sec"
-                }
-            ]
-        },
-        {
-            "name": "reset",
-            "base": "",
-            "fields": [
-                {
-                    "name": "table",
-                    "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "setnotifiers",
-            "base": "",
-            "fields": [
-                {
-                    "name": "notifiers",
-                    "type": "name[]"
-                }
-            ]
-        },
-        {
-            "name": "setsocial",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "socials",
-                    "type": "name[]"
-                }
-            ]
-        },
-        {
-            "name": "social",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "social",
-                    "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "socials_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "social",
-                    "type": "name"
-                },
-                {
-                    "name": "weight",
-                    "type": "uint32"
-                }
-            ]
-        },
-        {
-            "name": "status",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "status",
-                    "type": "name"
-                }
-            ]
-        },
-        {
-            "name": "unlink",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "account",
-                    "type": "name?"
-                }
-            ]
-        },
-        {
-            "name": "unsocial",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "social",
-                    "type": "name?"
-                }
-            ]
-        },
-        {
-            "name": "users_row",
-            "base": "",
-            "fields": [
-                {
-                    "name": "user_id",
-                    "type": "name"
-                },
-                {
-                    "name": "public_keys",
-                    "type": "public_key[]"
-                },
-                {
-                    "name": "accounts",
-                    "type": "name[]"
-                },
-                {
-                    "name": "socials",
-                    "type": "name[]"
-                },
-                {
-                    "name": "status",
-                    "type": "name"
-                },
-                {
-                    "name": "created_at",
-                    "type": "time_point_sec"
-                },
-                {
-                    "name": "updated_at",
-                    "type": "time_point_sec"
-                }
-            ]
+  "version": "eosio::abi/1.1",
+  "types": [],
+  "structs": [{
+      "name": "accounts_row",
+      "base": "",
+      "fields": [{
+          "name": "account",
+          "type": "name"
+        },{
+          "name": "user_id",
+          "type": "name"
         }
-    ],
-    "actions": [
-        {
-            "name": "configsocial",
-            "type": "configsocial",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "create",
-            "type": "create",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "deluser",
-            "type": "deluser",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "link",
-            "type": "link",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "proof",
-            "type": "proof",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "reset",
-            "type": "reset",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "setnotifiers",
-            "type": "setnotifiers",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "setsocial",
-            "type": "setsocial",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "social",
-            "type": "social",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "status",
-            "type": "status",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "unlink",
-            "type": "unlink",
-            "ricardian_contract": ""
-        },
-        {
-            "name": "unsocial",
-            "type": "unsocial",
-            "ricardian_contract": ""
+      ]
+    },{
+      "name": "config_row",
+      "base": "",
+      "fields": [{
+          "name": "notifiers",
+          "type": "name[]"
         }
-    ],
-    "tables": [
-        {
-            "name": "accounts",
-            "type": "accounts_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "config",
-            "type": "config_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "proofs",
-            "type": "proofs_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "socials",
-            "type": "socials_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
-        },
-        {
-            "name": "users",
-            "type": "users_row",
-            "index_type": "i64",
-            "key_names": [],
-            "key_types": []
+      ]
+    },{
+      "name": "configsocial",
+      "base": "",
+      "fields": [{
+          "name": "social",
+          "type": "name"
+        },{
+          "name": "weight",
+          "type": "uint32"
         }
-    ],
-    "ricardian_clauses": [],
-    "variants": []
+      ]
+    },{
+      "name": "create",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "public_keys",
+          "type": "public_key[]"
+        }
+      ]
+    },{
+      "name": "deluser",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        }
+      ]
+    },{
+      "name": "link",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "account",
+          "type": "name"
+        },{
+          "name": "sig",
+          "type": "signature"
+        }
+      ]
+    },{
+      "name": "proof",
+      "base": "",
+      "fields": [{
+          "name": "account",
+          "type": "name"
+        },{
+          "name": "nonce",
+          "type": "uint64"
+        },{
+          "name": "data",
+          "type": "string?"
+        }
+      ]
+    },{
+      "name": "proofs_row",
+      "base": "",
+      "fields": [{
+          "name": "account",
+          "type": "name"
+        },{
+          "name": "nonce",
+          "type": "uint64"
+        },{
+          "name": "data",
+          "type": "string"
+        },{
+          "name": "created_at",
+          "type": "time_point_sec"
+        }
+      ]
+    },{
+      "name": "reset",
+      "base": "",
+      "fields": [{
+          "name": "table",
+          "type": "name"
+        }
+      ]
+    },{
+      "name": "setnotifiers",
+      "base": "",
+      "fields": [{
+          "name": "notifiers",
+          "type": "name[]"
+        }
+      ]
+    },{
+      "name": "setsocial",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "socials",
+          "type": "name[]"
+        }
+      ]
+    },{
+      "name": "social",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "social",
+          "type": "name"
+        }
+      ]
+    },{
+      "name": "socials_row",
+      "base": "",
+      "fields": [{
+          "name": "social",
+          "type": "name"
+        },{
+          "name": "weight",
+          "type": "uint32"
+        }
+      ]
+    },{
+      "name": "status",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "status",
+          "type": "name"
+        }
+      ]
+    },{
+      "name": "unlink",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "account",
+          "type": "name?"
+        }
+      ]
+    },{
+      "name": "unsocial",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "social",
+          "type": "name?"
+        }
+      ]
+    },{
+      "name": "users_row",
+      "base": "",
+      "fields": [{
+          "name": "user_id",
+          "type": "name"
+        },{
+          "name": "public_keys",
+          "type": "public_key[]"
+        },{
+          "name": "accounts",
+          "type": "name[]"
+        },{
+          "name": "socials",
+          "type": "name[]"
+        },{
+          "name": "status",
+          "type": "name"
+        },{
+          "name": "created_at",
+          "type": "time_point_sec"
+        },{
+          "name": "updated_at",
+          "type": "time_point_sec"
+        }
+      ]
+    }
+  ],
+  "actions": [{
+      "name": "configsocial",
+      "type": "configsocial",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: configsocial\nsummary: Configure social weight\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "create",
+      "type": "create",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: create\nsummary: Create user account\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "deluser",
+      "type": "deluser",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: deluser\nsummary: Delete user account\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "link",
+      "type": "link",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: link\nsummary: Link EOSN account\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---\n\nCreate an authorized link with {{user_id}} EOSN account and {{account}} EOS account.\n\nLinked accounts can be required for applications such as Pomelo."
+    },{
+      "name": "proof",
+      "type": "proof",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: proof\nsummary: Proof of account using nonce and/or data\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "reset",
+      "type": "reset",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: social\nsummary: Reset tables\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "setnotifiers",
+      "type": "setnotifiers",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: setnotifiers\nsummary: Set in-line notifiers\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "setsocial",
+      "type": "setsocial",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: setsocial\nsummary: Enable user social logins\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "social",
+      "type": "social",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: social\nsummary: Enable user social logins\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "status",
+      "type": "status",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: status\nsummary: Update status of user account\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    },{
+      "name": "unlink",
+      "type": "unlink",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: unlink\nsummary: Unlink EOSN account\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---\n\nRemove authorized link from {{user_id}} EOSN account.\n\nApplications which require EOSN linked accounts will no longer be connected to {{account}}."
+    },{
+      "name": "unsocial",
+      "type": "unsocial",
+      "ricardian_contract": "---\nspec_version: \"0.2.0\"\ntitle: social\nsummary: Disable user social logins\nicon: https://avatars.githubusercontent.com/u/40322732#b3a535967d0193b378237325a249afe335411479c20b2af05c1c489cc9c572e4\n---"
+    }
+  ],
+  "tables": [{
+      "name": "accounts",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": [],
+      "type": "accounts_row"
+    },{
+      "name": "config",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": [],
+      "type": "config_row"
+    },{
+      "name": "proofs",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": [],
+      "type": "proofs_row"
+    },{
+      "name": "socials",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": [],
+      "type": "socials_row"
+    },{
+      "name": "users",
+      "index_type": "i64",
+      "key_names": [],
+      "key_types": [],
+      "type": "users_row"
+    }
+  ],
+  "ricardian_clauses": [],
+  "error_messages": [],
+  "abi_extensions": [],
+  "variants": [],
+  "action_results": [],
+  "kv_tables": {}
 }
