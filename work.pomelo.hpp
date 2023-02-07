@@ -687,6 +687,7 @@ private:
     bool is_user( const name user_id );
     checksum256 get_trx_id();
     pair<name, name> parse_memo(const string& memo);
+    void validate_bounty(const bounties_row& bounty);
 
     // notifiers
     void deposit_bounty( const name bounty_id, const name user_id, const name from, const extended_asset ext_quantity, const string memo );

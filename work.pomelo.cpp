@@ -171,6 +171,8 @@ void pomelo::syncbounty(const name bounty_id, const name status, const vector<na
         if (completed_at) row.completed_at = *completed_at;
     });
 
+    validate_bounty(bounty);
+
     pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
     statelog.send( bounty_id, status, "syncbounty"_n );
 }
@@ -471,4 +473,18 @@ void pomelo::transfer( const name from, const name to, const extended_asset valu
 {
     eosio::token::transfer_action transfer( value.contract, { from, "active"_n });
     transfer.send( from, to, value.quantity, memo );
+}
+
+// validates bounty row
+void pomelo::validate_bounty(const bounties_row& bounty)
+{
+    if (bounty.status == "started"_n || bounty.status == "submitted"_n || bounty.status == "released"_n || bounty.status == "done"_n) {
+        check(bounty.approved_user_id.value, "pomelo::validate_bounty: bounty must have an approved_user_id to be in this state" );
+        check(bounty.applicant_user_ids.count(bounty.approved_user_id), "pomelo::validate_bounty: approved user must be one of the applicants" );
+        check(bounty.funders.size(), "pomelo::validate_bounty: bounty must be funded to be in this state" );
+    }
+    if (bounty.status == "open"_n || bounty.status == "pending"_n || bounty.status == "closed"_n) {
+        check(bounty.approved_user_id.value == 0, "pomelo::validate_bounty: bounty must NOT have an approved_user_id to be in this state" );
+    }
+    // TODO: more checks
 }
