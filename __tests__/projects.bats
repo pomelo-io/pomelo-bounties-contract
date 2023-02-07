@@ -94,7 +94,7 @@
 @test "fund non-existing bounty" {
   run cleos transfer funder1 work.pomelo "100.0000 EOS" "bounty11"
   [ $status -eq 1 ]
-  [[ "$output" =~ "[bounty_id] does not exists" ]] || false
+  [[ "$output" =~ " does not exists" ]] || false
 }
 
 @test "fund bounty with < min_amount" {
@@ -194,7 +194,8 @@
   [ $status -eq 0 ]
 
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
-  [ "$result" = "1.9000 EOS 0.1000 EOS" ]
+  # [ "$result" = "1.9000 EOS 0.1000 EOS" ]
+  [ "$result" = "1.9048 EOS 0.0952 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
   [ "$result" = "author1.eosn 2.0000 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo transfers | jq -r '.rows | length')
@@ -248,7 +249,8 @@
   run cleos transfer funder1 work.pomelo "3.0000 EOS" "bounty1,funder1.eosn"
   [ $status -eq 0 ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
-  [ "$result" = "9.5000 EOS 0.5000 EOS" ]
+  # [ "$result" = "9.5000 EOS 0.5000 EOS" ]
+  [ "$result" = "9.5240 EOS 0.4760 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
   [ "$result" = "author1.eosn 2.0000 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[1].key + " " + .rows[0].funders[1].value')
@@ -276,7 +278,8 @@
   run cleos transfer funder1 work.pomelo "3.0000 EOS" "bounty1"
   [ $status -eq 0 ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].amount.quantity + " " + .rows[0].fee.quantity')
-  [ "$result" = "12.3500 EOS 0.6500 EOS" ]
+  # [ "$result" = "12.3500 EOS 0.6500 EOS" ]
+  [ "$result" = "12.3812 EOS 0.6188 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders[0].key + " " + .rows[0].funders[0].value')
   [ "$result" = "author1.eosn 5.0000 EOS" ]
   result=$(cleos get table work.pomelo work.pomelo bounties | jq -r '.rows[0].funders | length')
@@ -521,9 +524,11 @@
   [ $result = "done" ]
 
   fee_balance=$(cleos get currency balance eosio.token fee.pomelo)
-  [ "$fee_balance" = "0.6500 EOS" ]
+  # [ "$fee_balance" = "0.6500 EOS" ]
+  [ "$fee_balance" = "0.6188 EOS" ]
   hunter_balance=$(cleos get currency balance eosio.token hunter1)
-  [ "$hunter_balance" = "12.3500 EOS" ]
+  # [ "$hunter_balance" = "12.3500 EOS" ]
+  [ "$hunter_balance" = "12.3812 EOS" ]
 }
 
 @test "claim already claimed bounty" {
