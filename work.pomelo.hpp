@@ -350,6 +350,32 @@ public:
     void setstate( const name bounty_id, const name state );
 
     /**
+     * ## ACTION `syncbounty`
+     *
+     * - **authority**: `get_self()`
+     *
+     * Sync bounty details from backend. Called by `/admin/sync` on backend if there are inconsistencies between backend and blockchain.
+     *
+     * ### params
+     *
+     * - `{name} bounty_id` - bounty ID
+     * - `{name} status` - status `pending/published/banned/retired/denied'
+     * - `{vector<name>} applicant_user_ids` - list of applicants
+     * - `{optional<name>} approved_user_id` - approved applicant
+     * - `{time_point_sec} updated_at` - last update time
+     * - `{optional<time_point_sec>} submitted_at` - submitted time
+     * - `{optional<time_point_sec>} completed_at` - completed time
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos push action work.pomelo syncbounty '[bounty1, started, [applicant1.eosn, applicant2.eosn], applicant2.eosn, 2021-01-01T00:00:00, null, null]' -p work.pomelo
+     * ```
+     */
+    [[eosio::action]]
+    void syncbounty( const name bounty_id, const name state, const vector<name> applicant_user_ids, const optional<name> approved_user_id, const time_point_sec updated_at, const optional<time_point_sec> submitted_at, const optional<time_point_sec> completed_at );
+
+    /**
      * ## ACTION `setmetadata`
      *
      * - **authority**: `author_user_id`

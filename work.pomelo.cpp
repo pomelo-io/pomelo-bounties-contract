@@ -150,6 +150,33 @@ void pomelo::setstate( const name bounty_id, const name status )
 
 // @admin
 [[eosio::action]]
+void pomelo::syncbounty(const name bounty_id, const name status, const vector<name> applicant_user_ids, const optional<name> approved_user_id, const time_point_sec updated_at, const optional<time_point_sec> submitted_at, const optional<time_point_sec> completed_at)
+{
+    require_auth( get_self() );
+
+    // validate input
+    check( STATUS_TYPES.count(status), "pomelo::syncbounty: invalid [status]" );
+
+    // get bounty
+    pomelo::bounties_table _bounties( get_self(), get_self().value );
+    auto & bounty = _bounties.get( bounty_id.value, "pomelo::syncbounty: [bounty_id] does not exist");
+
+    // modify
+    _bounties.modify( bounty, get_self(), [&]( auto & row ) {
+        row.status = status;
+        row.applicant_user_ids = applicant_user_ids;
+        row.updated_at = updated_at;
+        if (approved_user_id) row.approved_user_id = *approved_user_id;
+        if (submitted_at) row.submitted_at = *submitted_at;
+        if (completed_at) row.completed_at = *completed_at;
+    });
+
+    pomelo::statelog_action statelog( get_self(), { get_self(), "active"_n });
+    statelog.send( bounty_id, status, "syncbounty"_n );
+}
+
+// @admin
+[[eosio::action]]
 void pomelo::setconfig( const optional<name> status, const optional<uint64_t> fee, const optional<name> login_contract, const optional<name> fee_account, const set<name> metadata_keys )
 {
     require_auth( get_self() );
