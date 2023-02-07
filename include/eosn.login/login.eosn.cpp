@@ -2,7 +2,7 @@
 #include <eosio.system/eosio.system.hpp>
 #include <eosio.token/eosio.token.hpp>
 #include <eosio/crypto.hpp>
-// #include <pomelo.play/play.pomelo.hpp>
+#include <pomelo.play/play.pomelo.hpp>
 #include <signature/signature.hpp>
 
 #include "login.eosn.hpp"
@@ -120,6 +120,7 @@ void login::link( const name user_id, const name account, const signature sig)
         unlink_user( accounts_itr->user_id, account );
     }
     unlink_by_account( account );
+    unlink_by_user( user_id );
 
     login::users_table _users( get_self(), get_self().value );
 
@@ -147,13 +148,13 @@ void login::link( const name user_id, const name account, const signature sig)
         row.user_id = user_id;
     });
 
-    // if (is_account("play.pomelo"_n)) {
-    //     const auto play_balance = pomelo::playtoken::get_balance("play.pomelo"_n, account, symbol_code("PLAY"));
-    //     if ( !play_balance.symbol.is_valid() ) {  // if already issued before - quietly don't issue
-    //         pomelo::playtoken::faucet_action faucet( "play.pomelo"_n, { "play.pomelo"_n, "active"_n });
-    //         faucet.send( account, symbol_code("PLAY") );
-    //     }
-    // }
+    if (get_self() == "d.login.eosn"_n && is_account("play.pomelo"_n)) {
+        const auto play_balance = pomelo::playtoken::get_balance("play.pomelo"_n, account, symbol_code("PLAY"));
+        if ( !play_balance.symbol.is_valid() ) {  // if already issued before - quietly don't issue
+            pomelo::playtoken::faucet_action faucet( "play.pomelo"_n, { "play.pomelo"_n, "active"_n });
+            faucet.send( account, symbol_code("PLAY") );
+        }
+    }
 }
 
 [[eosio::action]]
@@ -214,11 +215,10 @@ void login::unlink_user( const name user_id, const name account )
     }
 }
 
-
 [[eosio::action]]
 void login::social( const name user_id, const name social )
 {
-    require_auth( user_id );
+    require_auth( get_self() );
 
     login::users_table _users( get_self(), get_self().value );
     login::socials_table _socials( get_self(), get_self().value );
@@ -233,16 +233,16 @@ void login::social( const name user_id, const name social )
 
     // modify user row
     _users.modify( itr, get_self(), [&]( auto & row ) {
-        check( !row.socials.count( social ), "login::unsocial: [social=" + social.to_string() + "] is already exists" );
+        check( !row.socials.count( social ), "login::social: [social=" + social.to_string() + "] is already exists" );
         row.socials.insert( social );
         row.updated_at = current_time_point();
     });
 }
 
 [[eosio::action]]
-void login::unsocial( const name user_id, const optional<name> social )
+void login::setsocial( const name user_id, const set<name> socials )
 {
-    require_auth( user_id );
+    require_auth( get_self() );
 
     login::users_table _users( get_self(), get_self().value );
     login::socials_table _socials( get_self(), get_self().value );
@@ -252,8 +252,34 @@ void login::unsocial( const name user_id, const optional<name> social )
 
     // validate user ID
     auto itr = _users.find( user_id.value );
-    check( itr != _users.end(), "login::social: [user_id] does not exist" );
-    check( _socials.find( social->value ) != _socials.end(), "login::social: [social=" + social->to_string() + "] is unknown" );
+    check( itr != _users.end(), "login::social: [user_id=" + user_id.to_string() + "] does not exist" );
+    for ( const name social : socials ) {
+        check( _socials.find( social.value ) != _socials.end(), "login::social: [social=" + social.to_string() + "] is unknown" );
+    }
+
+    // modify user row
+    _users.modify( itr, get_self(), [&]( auto & row ) {
+        check( row.socials != socials, "login::setsocial: not modified" );
+        row.socials = socials;
+        row.updated_at = current_time_point();
+    });
+}
+
+[[eosio::action]]
+void login::unsocial( const name user_id, const optional<name> social )
+{
+    require_auth( get_self() );
+
+    login::users_table _users( get_self(), get_self().value );
+    login::socials_table _socials( get_self(), get_self().value );
+
+    // notify contracts
+    alert_notifiers();
+
+    // validate user ID
+    auto itr = _users.find( user_id.value );
+    check( itr != _users.end(), "login::unsocial: [user_id] does not exist" );
+    check( _socials.find( social->value ) != _socials.end(), "login::unsocial: [social=" + social->to_string() + "] is unknown" );
 
     // modify user row
     _users.modify( itr, get_self(), [&]( auto & row ) {
@@ -351,7 +377,7 @@ void login::reset( const name table )
 void login::configsocial( const name social, const uint32_t weight )
 {
     require_auth( get_self() );
-    check( weight <= 20000, "login::setsocial: [weight=" + to_string(weight) + "] should be <= 20000");
+    check( weight <= 200, "login::setsocial: [weight=" + to_string(weight) + "] should be <= 200");
 
     login::socials_table _socials( get_self(), get_self().value );
 

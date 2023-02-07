@@ -144,6 +144,20 @@
             ]
         },
         {
+            "name": "setsocial",
+            "base": "",
+            "fields": [
+                {
+                    "name": "user_id",
+                    "type": "name"
+                },
+                {
+                    "name": "socials",
+                    "type": "name[]"
+                }
+            ]
+        },
+        {
             "name": "social",
             "base": "",
             "fields": [
@@ -282,6 +296,11 @@
         {
             "name": "setnotifiers",
             "type": "setnotifiers",
+            "ricardian_contract": ""
+        },
+        {
+            "name": "setsocial",
+            "type": "setsocial",
             "ricardian_contract": ""
         },
         {

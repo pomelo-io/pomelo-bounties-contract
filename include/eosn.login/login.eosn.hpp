@@ -295,7 +295,7 @@ public:
      *
      * > Enable user social logins
      *
-     * - **authority**: `user_id`
+     * - **authority**: `get_self()`
      *
      * ### params
      *
@@ -312,11 +312,32 @@ public:
     void social( const name user_id, const name social );
 
     /**
+     * ## ACTION `setsocial`
+     *
+     * > Enable user social logins
+     *
+     * - **authority**: `get_self()`
+     *
+     * ### params
+     *
+     * - `{name} user_id` - user ID
+     * - `{set<name>} socials` - enable social accounts
+     *
+     * ### Example
+     *
+     * ```bash
+     * $ cleos push action login.eosn setsocial '["123.eosn", ["github"]]' -p login.eosn
+     * ```
+     */
+    [[eosio::action]]
+    void setsocial( const name user_id, const set<name> socials );
+
+    /**
      * ## ACTION `unsocial`
      *
      * > Disable user social logins
      *
-     * - **authority**: `user_id`
+     * - **authority**: `get_self()`
      *
      * ### params
      *
