@@ -1,4 +1,4 @@
-# 🍈 Pomelo for Work (Bounties) - EOSIO Smart Contract
+# 🍈 Pomelo for Work (Bounties) - Anteloped Smart Contract
 
 ## Security Audits
 
