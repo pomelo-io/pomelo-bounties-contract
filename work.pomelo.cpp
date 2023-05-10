@@ -449,7 +449,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
     check( balance >= bounty.amount + bounty.fee, "pomelo::claim: not enough balance to claim" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, bounty.amount, "🍈 claim " + bounty_id.to_string() + " bounty" );
+    transfer(get_self(), receiver, bounty.amount, "🍈 claim https://bounties.pomelo.io/" + bounty_id.to_string() + " bounty" );
 
     // transfer fee to fee account
     transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
