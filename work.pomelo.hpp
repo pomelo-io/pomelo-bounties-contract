@@ -245,7 +245,7 @@ public:
      *     "from": "myaccount",
      *     "to": "work.pomelo",
      *     "ext_quantity": {"contract": "tethertether", "quantity": "15.0000 USDT"},
-     *     "fee": "1.0000 EOS",
+     *     "fee": "1.0000 USDT",
      *     "memo": "bounty1,funder1.eosn",
      *     "value": 100.0,
      *     "trx_id": "3bf31f6c32a8663bf3fdb0993a2bf3784d181dc879545603dca2046f05e0c9e1",
@@ -664,7 +664,13 @@ public:
      * - `{name} from` - from EOS account (donation sender)
      * - `{name} to` - to EOS account (process only incoming)
      * - `{asset} quantity` - quantity received
-     * - `{string} memo` - transfer memo, i.e. "autho.eosn:123"
+     * - `{string} memo` - transfer memo, i.e. "bounty1,author.eosn"
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos transfer author work.pomelo "5.0000 USDT" "bounty1,author.eosn" --contract tethertether -p author.eosn
+     * ```
      */
     [[eosio::on_notify("*::transfer")]]
     void on_transfer( const name from, const name to, const asset quantity, const string memo );

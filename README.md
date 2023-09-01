@@ -16,9 +16,6 @@
 ### `@author`
 
 ```bash
-# before creating bounty, must link EOS account with EOSN login
-cleos push action login.eosn link '["author.eosn", "myaccount", "SIG_K1_KjnbJ2m22HtuRW7u7ZLdoCx76aNMiADHJpATGh32uYeJLdSjhdpHA7tmd4pj1Ni3mSr5DPRHHaydpaggrb5RcBg2HDDn7G"]' -p myaccount
-
 # create bounty
 cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", null]' -p author.eosn
 
@@ -276,7 +273,7 @@ $ ./test.sh
     "from": "myaccount",
     "to": "work.pomelo",
     "ext_quantity": {"contract": "tethertether", "quantity": "15.0000 USDT"},
-    "fee": "1.0000 EOS",
+    "fee": "1.0000 USDT",
     "memo": "grant:grant1",
     "value": 100.0,
     "trx_id": "3bf31f6c32a8663bf3fdb0993a2bf3784d181dc879545603dca2046f05e0c9e1",
@@ -609,8 +606,9 @@ Process incoming transfer
 - `{name} to` - to EOS account (process only incoming)
 - `{asset} quantity` - quantity received
 - `{string} memo` - transfer memo, i.e. "bounty1,author.eosn"
+
 ### example
 
 ```bash
-$ cleos transfer author work.pomelo "5.0000 EOS" "bounty1,author.eosn" -p author
+$ cleos transfer author work.pomelo "5.0000 USDT" "bounty1,author.eosn" --contract tethertether -p author.eosn
 ```
