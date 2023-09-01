@@ -7,6 +7,7 @@
 
 #include "src/getters.cpp"
 #include "src/notifiers.cpp"
+#include "src/bridge.cpp"
 
 // logging (used for syncing with backend)
 #include "src/logs.cpp"
@@ -30,8 +31,9 @@ void pomelo::token( const symbol sym, const name contract, const uint64_t min_am
     check( supply.amount, "pomelo::token: [sym] has no supply");
 
     // check if Oracle exists; if not it will assert fail
-    if ( is_account( oracle_code ) && extended_symbol{ sym, contract } != VALUE_SYM )
+    if ( is_account( defi::ORACLE_CODE ) && extended_symbol{ sym, contract } != VALUE_SYM ) {
         defi::oracle::get_value( {10000, extended_symbol{ sym, contract }}, oracle_id );
+    }
 
     const auto insert = [&]( auto & row ) {
         row.sym = sym;
@@ -57,7 +59,7 @@ void pomelo::deltoken( const symbol_code symcode )
     tokens.erase( itr );
 }
 
-// @user
+// @author
 [[eosio::action]]
 void pomelo::create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
 {
@@ -220,7 +222,7 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
     statelog.send( bounty_id, "started"_n, "approve"_n );
 }
 
-// @author or @admin
+// @applicant or @admin
 [[eosio::action]]
 void pomelo::forfeit( const name bounty_id )
 {
@@ -228,8 +230,10 @@ void pomelo::forfeit( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::forfeit: [bounty_id] does not exists" );
 
-    // require auth by hunter
-    eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
+    // require auth by applicant or admin
+    if ( !has_auth( get_self() )) {
+        eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
+    }
 
     // validate input
     check( bounty.status == "started"_n, "pomelo::forfeit: [bounty.status] must be `started` to forfeit" );
@@ -253,8 +257,10 @@ void pomelo::release( const name bounty_id )
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::release: [bounty_id] does not exists" );
 
-    // require auth by author
-   eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    // require auth by author or admin
+    if ( !has_auth( get_self() )) {
+        eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
+    }
 
     // validate input
     check( bounty.status == "submitted"_n, "pomelo::release: [bounty.status] must be `submitted` to `release`" );
@@ -318,11 +324,11 @@ void pomelo::close( const name bounty_id )
 [[eosio::action]]
 void pomelo::publish( const name bounty_id )
 {
+    require_auth( get_self() );
+
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::publish: [bounty_id] does not exists" );
-
-    require_auth(get_self());
 
     // validate input
     check( bounty.status == "pending"_n, "pomelo::publish: [bounty.status] must be `pending` to publish" );
@@ -339,16 +345,14 @@ void pomelo::publish( const name bounty_id )
 
 // @author
 [[eosio::action]]
-void pomelo::withdraw( const name bounty_id, const name receiver )
+void pomelo::withdraw( const name bounty_id, const name chain, const string receiver )
 {
-    require_auth( receiver );
-
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::withdraw: [bounty_id] does not exists" );
 
     // require auth by author
-    check( eosn::login::is_auth( bounty.author_user_id, get_configs().login_contract ), "pomelo::withdraw: [receiver] must be linked with EOSN Login to [author_user_id]" );
+    eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
     check( bounty.status == "pending"_n || bounty.status == "closed"_n, "pomelo::withdraw: [bounty.status] must be `pending` or `closed` to withdraw" );
@@ -358,7 +362,7 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
     check( bounty.claimed.amount == 0, "pomelo::withdraw: [bounty_id] already claimed" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, refund, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
+    handle_bridge_transfer( chain, receiver, refund, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
@@ -368,7 +372,7 @@ void pomelo::withdraw( const name bounty_id, const name receiver )
         row.updated_at = current_time_point();
     });
     pomelo::withdrawlog_action withdrawlog( get_self(), { get_self(), "active"_n });
-    withdrawlog.send( bounty_id, bounty.status, bounty.author_user_id, receiver, refund );
+    withdrawlog.send( bounty_id, chain, receiver, refund, bounty.status, bounty.author_user_id );
 }
 
 // @applicant
@@ -421,10 +425,8 @@ void pomelo::complete( const name bounty_id )
 
 // @applicant
 [[eosio::action]]
-void pomelo::claim( const name bounty_id, const name receiver )
+void pomelo::claim( const name bounty_id, const name chain, const string receiver )
 {
-    require_auth( receiver );
-
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
     const auto & bounty = _bounties.get( bounty_id.value, "pomelo::claim: [bounty_id] does not exists" );
@@ -433,7 +435,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
     check( bounty.status == "released"_n || bounty.status == "submitted"_n, "pomelo::claim: [bounty.status] must be `released` or `submitted` to `claim`" );
 
     // require auth by applicant
-    check( eosn::login::is_auth( bounty.approved_user_id, get_configs().login_contract ), "pomelo::claim: [receiver] must be linked with EOSN Login to [approved_user_id]" );
+    eosn::login::require_auth_user_id( bounty.approved_user_id, get_configs().login_contract );
 
     // bounty can be claimed after 72 hours of being submitted
     const uint32_t sec_since_submitted = current_time_point().sec_since_epoch() - bounty.submitted_at.sec_since_epoch();
@@ -449,7 +451,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
     check( balance >= bounty.amount + bounty.fee, "pomelo::claim: not enough balance to claim" );
 
     // tranfer bounty funds to receiver
-    transfer(get_self(), receiver, bounty.amount, "🍈 claim https://bounties.pomelo.io/" + bounty_id.to_string() + " bounty" );
+    handle_bridge_transfer( chain, receiver, bounty.amount, "🍈 claim https://bounties.pomelo.io/" + bounty_id.to_string() + " bounty" );
 
     // transfer fee to fee account
     transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
@@ -466,7 +468,7 @@ void pomelo::claim( const name bounty_id, const name receiver )
 
     const uint32_t sec_since_created = current_time_point().sec_since_epoch() - bounty.created_at.sec_since_epoch();
     pomelo::claimlog_action claimlog( get_self(), { get_self(), "active"_n });
-    claimlog.send( bounty_id, receiver, bounty.amount, bounty.fee.quantity, bounty.status, bounty.approved_user_id, sec_since_created / DAY );
+    claimlog.send( bounty_id, chain, receiver, bounty.amount, bounty.fee.quantity, bounty.status, bounty.approved_user_id, sec_since_created / DAY );
 }
 
 void pomelo::transfer( const name from, const name to, const extended_asset value, const string memo )

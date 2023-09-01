@@ -1,5 +1,12 @@
 # 🍈 Pomelo for Work (Bounties) - Antelope Smart Contract
 
+## Chains supported
+
+| id        | chain |
+|-----------|-------|
+| `eos`     | EOS Native
+| `eos.evm` | EOS EVM
+
 ## Security Audits
 
 - N/A
@@ -60,7 +67,6 @@ cleos push action work.pomelo claim '[bounty1]' -p myaccount
 ```bash
 # configure app
 cleos push action work.pomelo setconfig '[ok, 1000, login.eosn, fee.pomelo, [url]]' -p work.pomelo
-cleos push action work.pomelo token '["4,EOS", eosio.token, 10000, 1]' -p work.pomelo
 cleos push action work.pomelo token '["4,USDT", tethertether, 10000, 0]' -p work.pomelo
 
 # disable contract
@@ -192,8 +198,8 @@ $ ./test.sh
 
 ```json
 {
-    "sym": "4,EOS",
-    "contract": "eosio.token",
+    "sym": "4,USDT",
+    "contract": "tethertether",
     "min_amount": 10000,
     "oracle_id": 1
 }
@@ -269,7 +275,7 @@ $ ./test.sh
     "funder_user_id": "funder.eosn",
     "from": "myaccount",
     "to": "work.pomelo",
-    "ext_quantity": {"contract": "eosio.token", "quantity": "15.0000 EOS"},
+    "ext_quantity": {"contract": "tethertether", "quantity": "15.0000 USDT"},
     "fee": "1.0000 EOS",
     "memo": "grant:grant1",
     "value": 100.0,
@@ -312,7 +318,7 @@ Set token as supported asset
 ### example
 
 ```bash
-$ cleos push action work.pomelo token '["4,EOS", "eosio.token", 10000, 1]' -p work.pomelo
+$ cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 1]' -p work.pomelo
 ```
 
 ## ACTION `deltoken`
@@ -499,19 +505,24 @@ $ cleos push action work.pomelo deny '[bounty1]' -p author.eosn
 
 ## ACTION `withdraw`
 
-- **authority**: `account` (EOS account linked to EOSN Login's bounty author)
+- **authority**: `author_user_id` (EOSN Login)
 
-Author withdraws funds from bounty in "pending" or "closed" state (EOS account linked with EOSN Login)
+Author withdraws funds from bounty in "pending" state
 
 ### params
 
 - `{name} bounty_id` - bounty ID
-- `{name} receiver` - receiver account (must be linked to EOSN Login author account)
+- `{name} chain` - chain name
+- `{name} receiver` - receiver (Antelope account or EVM address)
 
 ### example
 
 ```bash
-$ cleos push action work.pomelo withdraw '[bounty1, myaccount]' -p myaccount
+// withdraw to EOS Native
+$ cleos push action work.pomelo withdraw '[bounty1, eos, "myaccount"]' -p author.eosn
+
+// withdraw to EOS EVM
+$ cleos push action work.pomelo withdraw '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p author.eosn
 ```
 
 ## ACTION `apply`
@@ -568,19 +579,24 @@ $ cleos push action work.pomelo complete '[bounty1]' -p hunter.eosn
 
 ## ACTION `claim`
 
-- **authority**: `account` (EOS account linked with EOSN Login)
+- **authority**: `approved_user_id` (EOSN Login)
 
 Hunter claims bounty funds
 
 ### params
 
 - `{name} bounty_id` - bounty ID
-- `{name} receiver` - receiver account (must be linked to EOSN Login approved applicant)
+- `{name} chain` - chain name
+- `{name} receiver` - receiver (Antelope account or EVM address)
 
 ### example
 
 ```bash
-$ cleos push action work.pomelo claim '[bounty1]' -p myaccount
+// claim to EOS Native
+$ cleos push action work.pomelo claim '[bounty1, eos, "myaccount"]' -p claimer.eosn
+
+// claim to EOS EVM
+$ cleos push action work.pomelo claim '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p claimer.eosn
 ```
 
 ## TRANSFER NOTIFY HANDLER `on_transfer`
