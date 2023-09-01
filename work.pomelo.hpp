@@ -103,8 +103,8 @@ public:
      *
      * ```json
      * {
-     *     "sym": "4,EOS",
-     *     "contract": "eosio.token",
+     *     "sym": "4,USDT",
+     *     "contract": "tethertether",
      *     "min_amount": 10000,
      *     "oracle_id": 1
      * }
@@ -119,6 +119,37 @@ public:
         uint64_t primary_key() const { return sym.code().raw(); }
     };
     typedef eosio::multi_index< "tokens"_n, tokens_row> tokens_table;
+
+    /**
+     * ## TABLE `chains`
+     *
+     * ### params
+     *
+     * - `{name} chain` - name of chain
+     * - `{name} bridge` - bridge contract
+     *
+     * ### example
+     *
+     * ```json
+     * [
+     *     {
+     *         "chain": "eos.evm",
+     *         "bridge": "eosio.evm"
+     *     },
+     *     {
+     *         "chain": "eos",
+     *         "bridge": ""
+     *     }
+     * ]
+     * ```
+     */
+    struct [[eosio::table("chains")]] chains_row {
+        name                chain;
+        name                bridge;
+
+        uint64_t primary_key() const { return chain.value; }
+    };
+    typedef eosio::multi_index< "chains"_n, chains_row> chains_table;
 
     /**
      * ## TABLE `bounties`
@@ -213,8 +244,8 @@ public:
      *     "funder_user_id": "funder.eosn"_n,
      *     "from": "myaccount",
      *     "to": "work.pomelo",
-     *     "ext_quantity": {"contract": "eosio.token", "quantity": "15.0000 EOS"},
-     *     "fee": "1.0000 EOS",
+     *     "ext_quantity": {"contract": "tethertether", "quantity": "15.0000 USDT"},
+     *     "fee": "1.0000 USDT",
      *     "memo": "bounty1,funder1.eosn",
      *     "value": 100.0,
      *     "trx_id": "3bf31f6c32a8663bf3fdb0993a2bf3784d181dc879545603dca2046f05e0c9e1",
@@ -279,7 +310,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo token '["4,EOS", "eosio.token", 10000, 1]' -p work.pomelo
+     * $ cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 1]' -p work.pomelo
      * ```
      */
     [[eosio::action]]
@@ -531,23 +562,28 @@ public:
     /**
      * ## ACTION `withdraw`
      *
-     * - **authority**: `account` (EOS account linked to EOSN Login's bounty author)
+     * - **authority**: `author_user_id` (EOSN Login)
      *
-     * Author withdraws funds from bounty in "pending" state (EOS account linked with EOSN Login)
+     * Author withdraws funds from bounty in "pending" state
      *
      * ### params
      *
      * - `{name} bounty_id` - bounty ID
-     * - `{name} receiver` - receiver account (must be linked to EOSN Login author account)
+     * - `{name} chain` - chain name
+     * - `{name} receiver` - receiver (Antelope account or EVM address)
      *
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo withdraw '[bounty1, myaccount]' -p myaccount
+     * // withdraw to EOS Native
+     * $ cleos push action work.pomelo withdraw '[bounty1, eos, "myaccount"]' -p author.eosn
+     *
+     * // withdraw to EOS EVM
+     * $ cleos push action work.pomelo withdraw '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p author.eosn
      * ```
      */
     [[eosio::action]]
-    void withdraw( const name bounty_id, const name receiver );
+    void withdraw( const name bounty_id, const name chain, const string receiver );
 
     /**
      * ## ACTION `apply`
@@ -595,23 +631,28 @@ public:
     /**
      * ## ACTION `claim`
      *
-     * - **authority**: `account` (EOS account linked with EOSN Login)
+     * - **authority**: `approved_user_id` (EOSN Login)
      *
      * Hunter claims bounty funds
      *
      * ### params
      *
      * - `{name} bounty_id` - bounty ID
-     * - `{name} receiver` - receiver account (must be linked to EOSN Login approved applicant)
+     * - `{name} chain` - chain name
+     * - `{name} receiver` - receiver (Antelope account or EVM address)
      *
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo claim '[bounty1]' -p myaccount
+     * // claim to EOS Native
+     * $ cleos push action work.pomelo claim '[bounty1, eos, "myaccount"]' -p claimer.eosn
+     *
+     * // claim to EOS EVM
+     * $ cleos push action work.pomelo claim '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p claimer.eosn
      * ```
      */
     [[eosio::action]]
-    void claim( const name bounty_id, const name receiver );
+    void claim( const name bounty_id, const name chain, const string receiver );
 
     /**
      * ## TRANSFER NOTIFY HANDLER `on_transfer`
@@ -623,11 +664,16 @@ public:
      * - `{name} from` - from EOS account (donation sender)
      * - `{name} to` - to EOS account (process only incoming)
      * - `{asset} quantity` - quantity received
-     * - `{string} memo` - transfer memo, i.e. "autho.eosn:123"
+     * - `{string} memo` - transfer memo, i.e. "bounty1,author.eosn"
+     *
+     * ### example
+     *
+     * ```bash
+     * $ cleos transfer author work.pomelo "5.0000 USDT" "bounty1,author.eosn" --contract tethertether -p author.eosn
+     * ```
      */
     [[eosio::on_notify("*::transfer")]]
     void on_transfer( const name from, const name to, const asset quantity, const string memo );
-
 
     [[eosio::action]]
     void depositlog( const name bounty_id, const name funder_user_id, const name from, const extended_asset ext_quantity, const asset fee, const double value, const string& memo );
@@ -639,10 +685,10 @@ public:
     void statelog( const name bounty_id, const name status, const name action );
 
     [[eosio::action]]
-    void claimlog( const name bounty_id, const name receiver, const extended_asset ext_quantity, asset fee, const name status, const name worker_user_id, const uint32_t days_since_created );
+    void claimlog( const name bounty_id, const name chain, const string receiver, const extended_asset bounty, const asset fee, const name status, const name approved_user_id, const uint32_t days_since_created );
 
     [[eosio::action]]
-    void withdrawlog( const name bounty_id, const name status, const name author_user_id, const name receiver, const extended_asset refund );
+    void withdrawlog( const name bounty_id, const name chain, const string receiver, const extended_asset refund, const name status, const name author_user_id );
 
     // DEBUG (used to help testing)
     #ifdef DEBUG
@@ -695,6 +741,9 @@ private:
 
     // utils
     void transfer( const name from, const name to, const extended_asset value, const string memo );
+
+    // bridge
+    void handle_bridge_transfer( const name chain, const string receiver, const extended_asset value, const string memo );
 
     // DEBUG (used to help testing)
     #ifdef DEBUG
