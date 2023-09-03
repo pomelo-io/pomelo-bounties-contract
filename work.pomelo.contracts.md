@@ -106,10 +106,12 @@ icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7
 <h1 class="contract">withdraw</h1>
 ---
 spec_version: "0.2.0"
-title: withdraw
-summary: Withdraw
+title: Withdraw Bounty
+summary: 'Withdraw bounty with ID {{nowrap bounty_id}} from {{nowrap chain}} and transfer to {{nowrap receiver}}'
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
+
+The user requests to withdraw the bounty with ID {{bounty_id}} from the {{chain}} chain and transfer it to the account or address {{receiver}}.
 
 <h1 class="contract">apply</h1>
 ---
@@ -130,10 +132,12 @@ icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7
 <h1 class="contract">claim</h1>
 ---
 spec_version: "0.2.0"
-title: claim
-summary: Claim
+title: Claim Bounty
+summary: 'Claim bounty with ID {{nowrap bounty_id}} on {{nowrap chain}} and transfer to {{nowrap receiver}}'
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
+
+The user requests to claim the bounty with ID {{bounty_id}} on the {{chain}} chain and transfer it to the account or address {{receiver}}.
 
 <h1 class="contract">forfeit</h1>
 ---
