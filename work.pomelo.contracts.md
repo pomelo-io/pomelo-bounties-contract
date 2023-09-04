@@ -107,7 +107,7 @@ icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7
 ---
 spec_version: "0.2.0"
 title: Withdraw Bounty
-summary: 'Withdraw bounty with ID {{nowrap bounty_id}} from {{nowrap chain}} and transfer to {{nowrap receiver}}'
+summary: 'Withdraw bounty to {{nowrap receiver}}'
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
 
@@ -133,7 +133,7 @@ icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7
 ---
 spec_version: "0.2.0"
 title: Claim Bounty
-summary: 'Claim bounty with ID {{nowrap bounty_id}} on {{nowrap chain}} and transfer to {{nowrap receiver}}'
+summary: 'Claim bounty to {{nowrap receiver}}'
 icon: https://avatars.githubusercontent.com/u/83723501#b74cf8b3d884f42fffea4bfe7070b3871e1845805c57973a48324af1228ad9cc
 ---
 
