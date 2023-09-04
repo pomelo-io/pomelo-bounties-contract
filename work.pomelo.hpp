@@ -685,7 +685,7 @@ public:
     void statelog( const name bounty_id, const name status, const name action );
 
     [[eosio::action]]
-    void claimlog( const name bounty_id, const name chain, const string receiver, const extended_asset bounty, const asset fee, const name status, const name approved_user_id, const uint32_t days_since_created );
+    void claimlog( const name bounty_id, const name chain, const string receiver, const extended_asset ext_quantity, const asset fee, const name status, const name worker_user_id, const uint32_t days_since_created );
 
     [[eosio::action]]
     void withdrawlog( const name bounty_id, const name chain, const string receiver, const extended_asset refund, const name status, const name author_user_id );

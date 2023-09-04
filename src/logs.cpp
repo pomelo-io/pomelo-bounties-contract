@@ -17,7 +17,7 @@ void pomelo::statelog( const name bounty_id, const name status, const name actio
 }
 
 [[eosio::action]]
-void pomelo::claimlog( const name bounty_id, const name chain, const string receiver, const extended_asset bounty, const asset fee, const name status, const name approved_user_id, const uint32_t days_since_created )
+void pomelo::claimlog( const name bounty_id, const name chain, const string receiver, const extended_asset ext_quantity, const asset fee, const name status, const name worker_user_id, const uint32_t days_since_created )
 {
     require_auth( get_self() );
 }
