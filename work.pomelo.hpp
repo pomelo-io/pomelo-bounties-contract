@@ -571,19 +571,23 @@ public:
      * - `{name} bounty_id` - bounty ID
      * - `{name} chain` - chain name
      * - `{name} receiver` - receiver (Antelope account or EVM address)
+     * - `{string} [memo=""]` - (optional) memo (only available when using Antelope receiver)
      *
      * ### example
      *
      * ```bash
      * // withdraw to EOS Native
-     * $ cleos push action work.pomelo withdraw '[bounty1, eos, "myaccount"]' -p author.eosn
+     * $ cleos push action work.pomelo withdraw '[bounty1, eos, "myaccount", null]' -p author.eosn
+     *
+     * // withdraw to Exchange
+     * $ cleos push action work.pomelo withdraw '[bounty1, eos, "eosbndeposit", "100245696"]' -p author.eosn
      *
      * // withdraw to EOS EVM
-     * $ cleos push action work.pomelo withdraw '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p author.eosn
+     * $ cleos push action work.pomelo withdraw '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534", null]' -p author.eosn
      * ```
      */
     [[eosio::action]]
-    void withdraw( const name bounty_id, const name chain, const string receiver );
+    void withdraw( const name bounty_id, const name chain, const string receiver, const optional<string> memo );
 
     /**
      * ## ACTION `apply`
@@ -640,19 +644,23 @@ public:
      * - `{name} bounty_id` - bounty ID
      * - `{name} chain` - chain name
      * - `{name} receiver` - receiver (Antelope account or EVM address)
+     * - `{string} [memo=""]` - (optional) memo (only available when using Antelope receiver)
      *
      * ### example
      *
      * ```bash
      * // claim to EOS Native
-     * $ cleos push action work.pomelo claim '[bounty1, eos, "myaccount"]' -p claimer.eosn
+     * $ cleos push action work.pomelo claim '[bounty1, eos, "myaccount", null]' -p claimer.eosn
+     *
+     * // claim to Exchange
+     * $ cleos push action work.pomelo claim '[bounty1, eos, "eosbndeposit", "100245696"]' -p claimer.eosn
      *
      * // claim to EOS EVM
-     * $ cleos push action work.pomelo claim '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p claimer.eosn
+     * $ cleos push action work.pomelo claim '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534", null]' -p claimer.eosn
      * ```
      */
     [[eosio::action]]
-    void claim( const name bounty_id, const name chain, const string receiver );
+    void claim( const name bounty_id, const name chain, const string receiver, const optional<string> memo );
 
     /**
      * ## TRANSFER NOTIFY HANDLER `on_transfer`
@@ -743,7 +751,7 @@ private:
     void transfer( const name from, const name to, const extended_asset value, const string memo );
 
     // bridge
-    void handle_bridge_transfer( const name chain, const string receiver, const extended_asset value, const string memo );
+    void handle_bridge_transfer( const name chain, const string receiver, const extended_asset value, const string memo, const string default_memo );
 
     // DEBUG (used to help testing)
     #ifdef DEBUG

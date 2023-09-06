@@ -511,15 +511,19 @@ Author withdraws funds from bounty in "pending" state
 - `{name} bounty_id` - bounty ID
 - `{name} chain` - chain name
 - `{name} receiver` - receiver (Antelope account or EVM address)
+- `{string} [memo=""]` - (optional) memo (only available when using Antelope receiver)
 
 ### example
 
 ```bash
 // withdraw to EOS Native
-$ cleos push action work.pomelo withdraw '[bounty1, eos, "myaccount"]' -p author.eosn
+$ cleos push action work.pomelo withdraw '[bounty1, eos, "myaccount", null]' -p author.eosn
+
+// withdraw to Exchange
+$ cleos push action work.pomelo withdraw '[bounty1, eos, "eosbndeposit", "100245696"]' -p author.eosn
 
 // withdraw to EOS EVM
-$ cleos push action work.pomelo withdraw '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p author.eosn
+$ cleos push action work.pomelo withdraw '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534", null]' -p author.eosn
 ```
 
 ## ACTION `apply`
@@ -585,15 +589,19 @@ Hunter claims bounty funds
 - `{name} bounty_id` - bounty ID
 - `{name} chain` - chain name
 - `{name} receiver` - receiver (Antelope account or EVM address)
+- `{string} [memo=""]` - (optional) memo (only available when using Antelope receiver)
 
 ### example
 
 ```bash
 // claim to EOS Native
-$ cleos push action work.pomelo claim '[bounty1, eos, "myaccount"]' -p claimer.eosn
+$ cleos push action work.pomelo claim '[bounty1, eos, "myaccount", null]' -p claimer.eosn
+
+// claim to Exchange
+$ cleos push action work.pomelo claim '[bounty1, eos, "eosbndeposit", "100245696"]' -p claimer.eosn
 
 // claim to EOS EVM
-$ cleos push action work.pomelo claim '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534"]' -p claimer.eosn
+$ cleos push action work.pomelo claim '[bounty1, eos.evm, "0xaa2F34E41B397aD905e2f48059338522D05CA534", null]' -p claimer.eosn
 ```
 
 ## TRANSFER NOTIFY HANDLER `on_transfer`

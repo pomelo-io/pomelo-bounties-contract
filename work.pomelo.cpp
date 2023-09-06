@@ -345,7 +345,7 @@ void pomelo::publish( const name bounty_id )
 
 // @author
 [[eosio::action]]
-void pomelo::withdraw( const name bounty_id, const name chain, const string receiver )
+void pomelo::withdraw( const name bounty_id, const name chain, const string receiver, const optional<string> memo )
 {
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
@@ -362,7 +362,7 @@ void pomelo::withdraw( const name bounty_id, const name chain, const string rece
     check( bounty.claimed.amount == 0, "pomelo::withdraw: [bounty_id] already claimed" );
 
     // tranfer bounty funds to receiver
-    handle_bridge_transfer( chain, receiver, refund, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
+    handle_bridge_transfer( chain, receiver, refund, *memo, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
@@ -425,7 +425,7 @@ void pomelo::complete( const name bounty_id )
 
 // @applicant
 [[eosio::action]]
-void pomelo::claim( const name bounty_id, const name chain, const string receiver )
+void pomelo::claim( const name bounty_id, const name chain, const string receiver, const optional<string> memo )
 {
     // get bounty
     pomelo::bounties_table _bounties( get_self(), get_self().value );
@@ -451,7 +451,7 @@ void pomelo::claim( const name bounty_id, const name chain, const string receive
     check( balance >= bounty.amount + bounty.fee, "pomelo::claim: not enough balance to claim" );
 
     // tranfer bounty funds to receiver
-    handle_bridge_transfer( chain, receiver, bounty.amount, "🍈 claim https://bounties.pomelo.io/" + bounty_id.to_string() + " bounty" );
+    handle_bridge_transfer( chain, receiver, bounty.amount, *memo, "🍈 claim https://bounties.pomelo.io/" + bounty_id.to_string() + " bounty" );
 
     // transfer fee to fee account
     transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
