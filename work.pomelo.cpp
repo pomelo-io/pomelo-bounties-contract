@@ -55,7 +55,7 @@ void pomelo::deltoken( const symbol_code symcode )
 
 // @author
 [[eosio::action]]
-void pomelo::create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type )
+void pomelo::create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const string url, const optional<name> bounty_type )
 {
     eosn::login::require_auth_user_id( author_user_id, get_configs().login_contract );
 
@@ -84,6 +84,7 @@ void pomelo::create( const name author_user_id, const name bounty_id, const symb
         row.permissions = "approval"_n;
         row.created_at = current_time_point();
         row.updated_at = current_time_point();
+        row.metadata["url"_n] = url;
     });
     pomelo::createlog_action createlog( get_self(), { get_self(), "active"_n });
     createlog.send( bounty_id, author_user_id, extended_symbol{ token.sym, token.contract }, type, "approval"_n );
@@ -187,6 +188,7 @@ void pomelo::setconfig( const optional<name> status, const optional<uint64_t> fe
     if ( login_contract ) configs.login_contract = *login_contract;
     if ( fee_account ) configs.fee_account = *fee_account;
     if ( metadata_keys.size() ) configs.metadata_keys = metadata_keys;
+    configs.metadata_keys.insert("url"_n); // always include url by default
     _configs.set( configs, get_self() );
 }
 

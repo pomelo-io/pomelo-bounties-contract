@@ -345,12 +345,13 @@ Create bounty
 - `{name} author_user_id` - author (EOSN Login ID)
 - `{name} bount_id` - bounty ID
 - `{symbol_code} accepted_token` - accepted deposit token (ex: `"USDT"`)
+- `{string} url` - bounty URL (ex: GitHub issue URL)
 - `{optional<name>} bounty_type` - bounty type (default = traditional)
 
 ### Example
 
 ```bash
-$ cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", null]' -p author.eosn
+$ cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", "https://github.com/pomelo-io/pomelo-rest-api/issues/735", null]' -p author.eosn
 ```
 
 ## ACTION `setmetadata`

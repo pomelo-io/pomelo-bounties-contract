@@ -236,16 +236,17 @@ public:
      * - `{name} author_user_id` - author (EOSN Login ID)
      * - `{name} bount_id` - bounty ID
      * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"USDT"`)
+     * - `{string} url` - bounty URL (ex: GitHub issue URL)
      * - `{optional<name>} bounty_type` - bounty type (default = traditional)
      *
      * ### Example
      *
      * ```bash
-     * $ cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", null]' -p author.eosn
+     * $ cleos push action work.pomelo create '[author.eosn, bounty1, "USDT", "https://github.com/pomelo-io/pomelo-rest-api/issues/735", null]' -p author.eosn
      * ```
      */
     [[eosio::action]]
-    void create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const optional<name> bounty_type );
+    void create( const name author_user_id, const name bounty_id, const symbol_code accepted_token, const string url, const optional<name> bounty_type );
 
     /**
      * ## ACTION `setstate`
