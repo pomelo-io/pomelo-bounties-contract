@@ -30,34 +30,6 @@ public:
     using contract::contract;
 
     /**
-     * ## TABLE `status`
-     *
-     * ### params
-     *
-     * - `{vector<uint32_t>} counters` - counters
-     *   - `{uint32_t} counters[0]` - total created
-     *   - `{uint32_t} counters[1]` - total approved
-     *   - `{uint32_t} counters[2]` - total denied
-     *   - `{uint32_t} counters[3]` - total completed
-     *   - `{uint32_t} counters[3]` - total claimed
-     * - `{time_point_sec} last_updated`
-     *
-     * ### example
-     *
-     * ```json
-     * {
-     *     "counters": [1234, 12],
-     *     "last_updated": "2021-04-12T12:23:42"
-     * }
-     * ```
-     */
-    struct [[eosio::table("status")]] status_row {
-        vector<uint32_t>        counters;
-        time_point_sec          last_updated;
-    };
-    typedef eosio::singleton< "status"_n, status_row > status_table;
-
-    /**
      * ## TABLE `configs`
      *
      * ### params
@@ -73,7 +45,7 @@ public:
      * ```json
      * {
      *     "status": "ok",
-     *     "fee": 500,
+     *     "fee": 1000,
      *     "login_contract": "login.eosn",
      *     "fee_account": "fee.pomelo",
      *     "metadata_keys": ["url"]
@@ -82,7 +54,7 @@ public:
      */
     struct [[eosio::table("configs")]] configs_row {
         name            status = "testing"_n;
-        uint64_t        fee = 500;
+        uint64_t        fee = 1000;
         name            login_contract = "login.eosn"_n;
         name            fee_account = "fee.pomelo"_n;
         set<name>       metadata_keys = {"url"_n};
@@ -96,8 +68,8 @@ public:
      *
      * - `{symbol} sym` - (primary key) symbol
      * - `{name} contract` - token contract
-     * - `{uint64_t} min_amount` - min amount required when donating
-     * - `{uint64_t} oracle_id` - Defibox Oracle ID
+     * - `{uint64_t} min_amount` - min amount required per bounty
+     * - `{uint64_t} max_amount` - max amount required per bounty
      *
      * ### example
      *
@@ -105,8 +77,8 @@ public:
      * {
      *     "sym": "4,USDT",
      *     "contract": "tethertether",
-     *     "min_amount": 10000,
-     *     "oracle_id": 1
+     *     "min_amount": 50000,
+     *     "max_amount": 5000000
      * }
      * ```
      */
@@ -114,42 +86,11 @@ public:
         symbol              sym;
         name                contract;
         uint64_t            min_amount;
-        uint64_t            oracle_id;
+        uint64_t            max_amount;
 
         uint64_t primary_key() const { return sym.code().raw(); }
     };
     typedef eosio::multi_index< "tokens"_n, tokens_row> tokens_table;
-
-    /**
-     * ## TABLE `chains`
-     *
-     * ### params
-     *
-     * - `{name} chain` - name of chain
-     * - `{name} bridge` - bridge contract
-     *
-     * ### example
-     *
-     * ```json
-     * [
-     *     {
-     *         "chain": "eos.evm",
-     *         "bridge": "eosio.evm"
-     *     },
-     *     {
-     *         "chain": "eos",
-     *         "bridge": ""
-     *     }
-     * ]
-     * ```
-     */
-    struct [[eosio::table("chains")]] chains_row {
-        name                chain;
-        name                bridge;
-
-        uint64_t primary_key() const { return chain.value; }
-    };
-    typedef eosio::multi_index< "chains"_n, chains_row> chains_table;
 
     /**
      * ## TABLE `bounties`
@@ -218,69 +159,16 @@ public:
     typedef eosio::multi_index< "bounties"_n, bounties_row> bounties_table;
 
     /**
-     * ## TABLE `transfer`
-     *
-     * - **scope**: `{name} get_self()`
-     *
-     * ### params
-     *
-     * - `{uint64_t} transfer_id` - (primary key) token transfer ID
-     * - `{name} bounty_id` - bounty ID
-     * - `{name} from` - EOS account sender
-     * - `{name} to` - EOS account receiver
-     * - `{extended_asset} ext_quantity` - amount of tokens transfered
-     * - `{asset} fee` - fee charged and sent to `global.fee_account`
-     * - `{string} memo` - transfer memo
-     * - `{double} value` - valuation at time of received
-     * - `{checksum256} trx_id` - transaction ID
-     * - `{time_point_sec} created_at` - created at time
-     *
-     * ### example
-     *
-     * ```json
-     * {
-     *     "transfer_id": 10001,
-     *     "bounty_id": 123,
-     *     "funder_user_id": "funder.eosn"_n,
-     *     "from": "myaccount",
-     *     "to": "work.pomelo",
-     *     "ext_quantity": {"contract": "tethertether", "quantity": "15.0000 USDT"},
-     *     "fee": "1.0000 USDT",
-     *     "memo": "bounty1,funder1.eosn",
-     *     "value": 100.0,
-     *     "trx_id": "3bf31f6c32a8663bf3fdb0993a2bf3784d181dc879545603dca2046f05e0c9e1",
-     *     "created_at": "2020-12-06T00:00:00"
-     * }
-     * ```
-     */
-    struct [[eosio::table]] transfers_row {
-        uint64_t                transfer_id;
-        name                    bounty_id;
-        name                    funder_user_id;
-        name                    from;
-        name                    to;
-        extended_asset          ext_quantity;
-        asset                   fee;
-        string                  memo;
-        double                  value;
-        checksum256             trx_id;
-        time_point_sec          created_at;
-
-        uint64_t primary_key() const { return transfer_id; };
-    };
-    typedef eosio::multi_index< "transfers"_n, transfers_row> transfers_table;
-
-    /**
      * ## ACTION `setconfig`
      *
      * - **authority**: `get_self()`
      *
      * ### params
      *
-     * - `{name} status` - contract status: ok/testing/disabled
-     * - `{uint64_t} fee` - platform fee (bips - 1/100 1%)
-     * - `{name} login_contract` - EOSN Login contract
-     * - `{name} fee_account` - fee account
+     * - `{name} [status]` - contract status: ok/testing/disabled
+     * - `{uint64_t} [fee]` - platform fee (bips - 1/100 1%)
+     * - `{name} [login_contract]` - EOSN Login contract
+     * - `{name} [fee_account]` - fee account
      * - `{set<name>} metadata_keys` - allowed metadata keys
      *
      * ### example
@@ -304,17 +192,17 @@ public:
      *
      * - `{symbol} sym` - (primary key) symbol
      * - `{name} contract` - token contract
-     * - `{uint64_t} min_amount` - min amount required when donating
-     * - `{uint64_t} oracle_id` - Defibox oracle ID
+     * - `{uint64_t} min_amount` - min amount required per bounty
+     * - `{uint64_t} max_amount` - max amount required per bounty
      *
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 1]' -p work.pomelo
+     * $ cleos push action work.pomelo token '["4,USDT", "tethertether", 50000, 5000000]' -p work.pomelo
      * ```
      */
     [[eosio::action]]
-    void token( const symbol sym, const name contract, const uint64_t min_amount, const uint64_t oracle_id );
+    void token( const symbol sym, const name contract, const uint64_t min_amount, const uint64_t max_amount );
 
     /**
      * ## ACTION `deltoken`
@@ -347,7 +235,7 @@ public:
      *
      * - `{name} author_user_id` - author (EOSN Login ID)
      * - `{name} bount_id` - bounty ID
-     * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
+     * - `{symbol_code} accepted_token` - accepted deposit token (ex: `"USDT"`)
      * - `{optional<name>} bounty_type` - bounty type (default = traditional)
      *
      * ### Example
@@ -422,7 +310,7 @@ public:
      * ### example
      *
      * ```bash
-     * $ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io"]' -p author.eosn
+     * $ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io/pomelo-rest-api/issues/735"]' -p author.eosn
      * ```
      */
     [[eosio::action]]
@@ -736,7 +624,6 @@ private:
     pomelo::tokens_row get_token( const extended_asset ext_quantity );
     pomelo::tokens_row get_token( const symbol_code symcode );
     bool is_token_enabled( const symbol_code symcode );
-    double calculate_value( const extended_asset ext_quantity );
     name get_user_id( const name account );
     bool is_user( const name user_id );
     checksum256 get_trx_id();
@@ -745,7 +632,6 @@ private:
 
     // notifiers
     void deposit_bounty( const name bounty_id, const name user_id, const name from, const extended_asset ext_quantity, const string memo );
-    void save_transfer( const name bounty_id, const name funder_user_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value );
 
     // utils
     void transfer( const name from, const name to, const extended_asset value, const string memo );

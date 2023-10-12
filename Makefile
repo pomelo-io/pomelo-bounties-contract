@@ -4,5 +4,5 @@ all:
 
 .PHONY: build
 build:
-	cdt-cpp work.pomelo.cpp -I include
+	cdt-cpp work.pomelo.cpp -I include -D DEBUG
 

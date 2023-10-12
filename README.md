@@ -188,8 +188,8 @@ $ ./test.sh
 
 - `{symbol} sym` - (primary key) symbol
 - `{name} contract` - token contract
-- `{uint64_t} min_amount` - min amount required when donating
-- `{uint64_t} oracle_id` - Defibox Oracle ID
+- `{uint64_t} min_amount` - min amount required per bounty
+- `{uint64_t} max_amount` - max amount required per bounty
 
 ### example
 
@@ -197,8 +197,8 @@ $ ./test.sh
 {
     "sym": "4,USDT",
     "contract": "tethertether",
-    "min_amount": 10000,
-    "oracle_id": 1
+    "min_amount": 50000,
+    "max_amount": 5000000
 }
 ```
 
@@ -287,10 +287,10 @@ $ ./test.sh
 
 ### params
 
-- `{name} status` - contract status: ok/testing/disabled
-- `{uint64_t} fee` - platform fee (bips - 1/100 1%)
-- `{name} login_contract` - EOSN Login contract
-- `{name} fee_account` - fee account
+- `{name} [status]` - contract status: ok/testing/disabled
+- `{uint64_t} [fee]` - platform fee (bips - 1/100 1%)
+- `{name} [login_contract]` - EOSN Login contract
+- `{name} [fee_account]` - fee account
 - `{set<name>} metadata_keys` - allowed metadata keys
 
 ### example
@@ -309,13 +309,13 @@ Set token as supported asset
 
 - `{symbol} sym` - (primary key) symbol
 - `{name} contract` - token contract
-- `{uint64_t} min_amount` - min amount required when donating
-- `{uint64_t} oracle_id` - Defibox oracle ID
+- `{uint64_t} min_amount` - min amount required per bounty
+- `{uint64_t} max_amount` - max amount required per bounty
 
 ### example
 
 ```bash
-$ cleos push action work.pomelo token '["4,USDT", "tethertether", 10000, 1]' -p work.pomelo
+$ cleos push action work.pomelo token '["4,USDT", "tethertether", 50000, 5000000]' -p work.pomelo
 ```
 
 ## ACTION `deltoken`
@@ -331,7 +331,7 @@ Delete token from supported assets
 ### example
 
 ```bash
-$ cleos push action work.pomelo deltoken '["EOS"]' -p work.pomelo
+$ cleos push action work.pomelo deltoken '["USDT"]' -p work.pomelo
 ```
 
 ## ACTION `create`
@@ -344,7 +344,7 @@ Create bounty
 
 - `{name} author_user_id` - author (EOSN Login ID)
 - `{name} bount_id` - bounty ID
-- `{symbol_code} accepted_token` - accepted deposit token (ex: `"EOS"`)
+- `{symbol_code} accepted_token` - accepted deposit token (ex: `"USDT"`)
 - `{optional<name>} bounty_type` - bounty type (default = traditional)
 
 ### Example
@@ -368,7 +368,7 @@ Add/remove metadata. If key == "" - remove.
 ### example
 
 ```bash
-$ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io"]' -p author.eosn
+$ cleos push action work.pomelo setmetadata '[bounty1, url, "https://github.com/pomelo-io/pomelo-rest-api/issues/735"]' -p author.eosn
 ```
 
 ## ACTION `setstate`

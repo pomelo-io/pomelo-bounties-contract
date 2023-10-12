@@ -17,16 +17,12 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
     const uint64_t value = scope ? scope->value : get_self().value;
 
     // tables
-    pomelo::transfers_table _transfers( get_self(), value );
     pomelo::bounties_table _bounties( get_self(), value );
-    pomelo::configs_table _configs( get_self(), value );
     pomelo::tokens_table _tokens( get_self(), value );
-    pomelo::status_table _status( get_self(), value );
+    pomelo::configs_table _configs( get_self(), value );
 
-    if (table_name == "transfers"_n) clear_table( _transfers, rows_to_clear );
-    else if (table_name == "bounties"_n) clear_table( _bounties, rows_to_clear );
+    if (table_name == "bounties"_n) clear_table( _bounties, rows_to_clear );
     else if (table_name == "tokens"_n) clear_table( _tokens, rows_to_clear );
     else if (table_name == "configs"_n) _configs.remove();
-    else if (table_name == "status"_n) _status.remove();
     else check(false, "pomelo::cleartable: [table_name] unknown table to clear" );
 }

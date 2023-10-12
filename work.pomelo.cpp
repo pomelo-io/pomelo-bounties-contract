@@ -1,6 +1,5 @@
 #include <eosn.login/login.eosn.hpp>
 #include <eosio.token/eosio.token.hpp>
-#include <oracle.defi/oracle.defi.hpp>
 #include <utils/utils.hpp>
 
 #include "work.pomelo.hpp"
@@ -19,7 +18,7 @@
 
 // @admin
 [[eosio::action]]
-void pomelo::token( const symbol sym, const name contract, const uint64_t min_amount, const uint64_t oracle_id )
+void pomelo::token( const symbol sym, const name contract, const uint64_t min_amount, const uint64_t max_amount )
 {
     // authenticate
     require_auth( get_self() );
@@ -30,16 +29,11 @@ void pomelo::token( const symbol sym, const name contract, const uint64_t min_am
     check( supply.symbol == sym, "pomelo::token: [sym] symbol does not match with token supply");
     check( supply.amount, "pomelo::token: [sym] has no supply");
 
-    // check if Oracle exists; if not it will assert fail
-    if ( is_account( defi::ORACLE_CODE ) && extended_symbol{ sym, contract } != VALUE_SYM ) {
-        defi::oracle::get_value( {10000, extended_symbol{ sym, contract }}, oracle_id );
-    }
-
     const auto insert = [&]( auto & row ) {
         row.sym = sym;
         row.contract = contract;
         row.min_amount = min_amount;
-        row.oracle_id = oracle_id;
+        row.max_amount = max_amount;
     };
 
     const auto itr = tokens.find( sym.code().raw() );

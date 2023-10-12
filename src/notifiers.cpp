@@ -26,11 +26,10 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
 
     const asset quantity = ext_quantity.quantity;
     const symbol_code symcode = quantity.symbol.code();
-    const int64_t min_amount = get_token( ext_quantity ).min_amount;
+    const auto token = get_token( ext_quantity );
+    const int64_t min_amount = token.min_amount;
+    const int64_t max_amount = token.max_amount;
     const name funder_user_id = user_id.value ? user_id : bounty->author_user_id;    //if no user id specified - assume it came from the author
-
-    // validate incoming transfer
-    check( quantity.amount >= min_amount, "pomelo::deposit_bounty: [quantity=" + ext_quantity.quantity.to_string() + "] is less than [tokens.min_amount=" + to_string( min_amount ) + "]");
 
     // TO-DO: bounty can only deposit when state == "pending/open/started"
     check( STATUS_DEPOSIT_TYPES.find(bounty->status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for funding");
@@ -45,7 +44,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
     // calculate fee
     const extended_asset fee = calculate_fee( ext_quantity );
     const extended_asset amount = ext_quantity - fee;
-    double value = calculate_value( amount );
+    const double value = utils::asset_to_double(amount.quantity);
     print("\n", amount, " == ", value);
 
     // update bounty deposit
@@ -55,29 +54,13 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
         row.amount += amount;
         row.fee += fee;
         row.updated_at = current_time_point();
-    });
 
-    // save for logging purposes
-    save_transfer( bounty_id, funder_user_id, from, get_self(), amount, fee.quantity, memo, value );
+        // validate deposit min & max amounts
+        const int64_t total = row.amount.quantity.amount;
+        check( total >= min_amount, "pomelo::deposit_bounty: [quantity=" + ext_quantity.quantity.to_string() + "] is less than [tokens.min_amount=" + to_string( min_amount ) + "]");
+        check( total <= max_amount, "pomelo::deposit_bounty: [quantity=" + ext_quantity.quantity.to_string() + "] is greater than [tokens.max_amount=" + to_string( max_amount ) + "]");
+    });
 
     pomelo::depositlog_action depositlog( get_self(), { get_self(), "active"_n });
     depositlog.send( bounty_id, funder_user_id, from, amount, fee.quantity, value, memo );
-}
-
-void pomelo::save_transfer( const name bounty_id, const name funder_user_id, const name from, const name to, const extended_asset ext_quantity, const asset fee, const string& memo, const double value )
-{
-    pomelo::transfers_table _transfers( get_self(), get_self().value );
-    _transfers.emplace( get_self(), [&]( auto & row ) {
-        row.transfer_id = _transfers.available_primary_key();
-        row.bounty_id = bounty_id;
-        row.funder_user_id = funder_user_id;
-        row.from = from;
-        row.to = to;
-        row.ext_quantity = ext_quantity;
-        row.fee = fee;
-        row.memo = memo;
-        row.value = value;
-        row.trx_id = get_trx_id();
-        row.created_at = current_time_point();
-    });
 }

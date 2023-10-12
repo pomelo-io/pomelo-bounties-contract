@@ -1,4 +1,3 @@
-#include <oracle.defi/oracle.defi.hpp>
 #include <eosio/transaction.hpp>
 #include <eosio/crypto.hpp>
 #include <utils/utils.hpp>
@@ -61,12 +60,6 @@ bool pomelo::is_token_enabled( const symbol_code symcode )
     pomelo::tokens_table _tokens( get_self(), get_self().value );
     auto itr = _tokens.find( symcode.raw() );
     return itr != _tokens.end();
-}
-
-double pomelo::calculate_value( const extended_asset ext_quantity )
-{
-    const auto& token = get_token( ext_quantity );
-    return defi::oracle::get_value( ext_quantity, token.oracle_id );
 }
 
 name pomelo::get_user_id( const name account )
