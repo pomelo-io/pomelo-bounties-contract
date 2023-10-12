@@ -257,7 +257,7 @@ void pomelo::release( const name bounty_id )
     }
 
     // validate input
-    check( bounty.status == "submitted"_n, "pomelo::release: [bounty.status] must be `submitted` to `release`" );
+    check( bounty.status == "submitted"_n || bounty.status == "started"_n, "pomelo::release: [bounty.status] must be `submitted` or `started` to `release`" );
 
     // update bounty
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
