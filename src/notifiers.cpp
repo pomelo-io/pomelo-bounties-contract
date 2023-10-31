@@ -5,7 +5,7 @@ void pomelo::on_transfer( const name from, const name to, const asset quantity, 
     require_auth( from );
 
     // ignore outgoing/RAM/self-funding transfers
-    if ( to != get_self() || memo == get_self().to_string() || from == "eosio.ram"_n ) return;
+    if ( to != get_self() || from == "eosio.ram"_n ) return;
 
     // parse memo
     const auto [ bounty_id, user_id ] = parse_memo(memo);
