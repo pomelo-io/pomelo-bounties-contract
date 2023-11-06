@@ -9,7 +9,7 @@ void pomelo::handle_bridge_transfer( const name chain, const string receiver, co
 
     // handle EOS EVM transfer
     } else if (chain == "eos.evm"_n) {
-        transfer(get_self(), "eosio.evm"_n, value, receiver );
+        transfer(get_self(), "eosio.evmin"_n, value, receiver );
 
     // unsupported chain
     } else {
