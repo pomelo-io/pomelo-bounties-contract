@@ -8,7 +8,7 @@ void pomelo::on_transfer( const name from, const name to, const asset quantity, 
     if ( to != get_self() || from == "eosio.ram"_n ) return;
 
     // parse memo
-    const auto [ bounty_id, user_id ] = parse_memo(memo);
+    auto [ bounty_id, user_id ] = parse_memo(memo);
     check(bounty_id.value, ERROR_INVALID_MEMO);
 
     // handle token transfer
@@ -29,7 +29,8 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
     const auto token = get_token( ext_quantity );
     const int64_t min_amount = token.min_amount;
     const int64_t max_amount = token.max_amount;
-    const name funder_user_id = user_id.value ? user_id : bounty->author_user_id;    //if no user id specified - assume it came from the author
+    name funder_user_id = user_id.value ? user_id : bounty->author_user_id;         // if no user id specified - assume it came from the author
+    if ( eosn::login::is_user_id_exists(from, get_self() ) ) funder_user_id = from; // if EOSN linked account is sender - override as funder
 
     // TO-DO: bounty can only deposit when state == "pending/open/started"
     check( STATUS_DEPOSIT_TYPES.find(bounty->status) != STATUS_DEPOSIT_TYPES.end(), "pomelo::deposit_bounty: bounty not available for funding");

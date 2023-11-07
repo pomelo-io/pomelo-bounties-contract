@@ -449,6 +449,35 @@ public:
     }
 
     /**
+     * ## STATIC `is_user_id_exists`
+     *
+     * Returns true/false if user ID exists
+     *
+     * ### params
+     *
+     * - `{name} user_id` - user ID
+     * - `{name} [login_contract="login.eosn"]` - (optional) EOSN login contract
+     *
+     * ### returns
+     *
+     * - `{bool}` - [true/false] if user ID exists
+     *
+     * ### example
+     *
+     * ```c++
+     * const name user_id = "123.eosn"_n;
+     * const bool exists = eosn::login::is_user_id_exists( user_id );
+     * //=> true
+     * ```
+     */
+    static bool is_user_id_exists( const name user_id, const name login_contract )
+    {
+        login::users_table _users( login_contract, login_contract.value );
+        auto users = _users.find( user_id.value );
+        return users != _users.end();
+    }
+
+    /**
      * ## STATIC `require_auth_user_id`
      *
      * Asserts error if user ID is authorized or not

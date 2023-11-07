@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# unlock wallet
-cleos wallet unlock --password $(cat ~/eosio-wallet/.pass)
+# # unlock wallet
+# cleos wallet unlock --password $(cat ~/eosio-wallet/.pass)
 
 # build
 
@@ -38,7 +38,7 @@ if [ ! -f "./include/eosn.login/login.eosn.wasm" ]; then
     $CDT ./include/eosn.login/login.eosn.cpp -I include -o include/eosn.login/login.eosn.wasm --no-missing-ricardian-clause
 fi
 
-if [ ! -f "./include/oracle.defi/oracle.defi.wasm" ]; then
-    echo "compiling... [oracle.defi]"
-    $CDT ./include/oracle.defi/oracle.defi.cpp -I include -o include/oracle.defi/oracle.defi.wasm --no-missing-ricardian-clause
-fi
+# if [ ! -f "./include/oracle.defi/oracle.defi.wasm" ]; then
+#     echo "compiling... [oracle.defi]"
+#     $CDT ./include/oracle.defi/oracle.defi.cpp -I include -o include/oracle.defi/oracle.defi.wasm --no-missing-ricardian-clause
+# fi
