@@ -9,7 +9,13 @@ void pomelo::handle_bridge_transfer( const name chain, const string receiver, co
 
     // handle EOS EVM transfer
     } else if (chain == "eos.evm"_n) {
-        transfer(get_self(), "eosio.evmin"_n, value, receiver );
+        const auto config = get_configs();
+
+        // include ingress fee
+        // TO-DO pull ingress fee from `eosio.evm2o` contract
+        const extended_asset ingress_fee = {100, value.get_extended_symbol()};
+        transfer(config.fee_account, get_self(), ingress_fee, "ingress fee" );
+        transfer(get_self(), "eosio.evmin"_n, value + ingress_fee, receiver );
 
     // unsupported chain
     } else {

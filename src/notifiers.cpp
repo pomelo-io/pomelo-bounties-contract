@@ -7,6 +7,10 @@ void pomelo::on_transfer( const name from, const name to, const asset quantity, 
     // ignore outgoing/RAM/self-funding transfers
     if ( to != get_self() || from == "eosio.ram"_n ) return;
 
+    // ignore any incoming transfers from fee account (EVM ingress fee paid by fee account)
+    const auto config = get_configs();
+    if ( from == config.fee_account ) return;
+
     // parse memo
     auto [ bounty_id, user_id ] = parse_memo(memo);
     check(bounty_id.value, ERROR_INVALID_MEMO);
