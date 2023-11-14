@@ -353,12 +353,17 @@ void pomelo::withdraw( const name bounty_id, const name chain, const string rece
     // validate input
     check( bounty.status == "pending"_n || bounty.status == "closed"_n, "pomelo::withdraw: [bounty.status] must be `pending` or `closed` to withdraw" );
 
-    const auto refund = bounty.amount + bounty.fee;
-    check( refund.quantity.amount > 0, "pomelo::withdraw: nothing to withdraw" );
+    // validate amounts
+    check( bounty.amount.quantity.amount > 0, "pomelo::withdraw: nothing to withdraw" );
     check( bounty.claimed.amount == 0, "pomelo::withdraw: [bounty_id] already claimed" );
 
     // tranfer bounty funds to receiver
-    handle_bridge_transfer( chain, receiver, refund, *memo, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
+    handle_bridge_transfer( chain, receiver, bounty.amount, *memo, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
+
+    // transfer fee to fee account
+    if ( bounty.fee.quantity.amount > 0 ) {
+        transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
+    }
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
@@ -368,7 +373,7 @@ void pomelo::withdraw( const name bounty_id, const name chain, const string rece
         row.updated_at = current_time_point();
     });
     pomelo::withdrawlog_action withdrawlog( get_self(), { get_self(), "active"_n });
-    withdrawlog.send( bounty_id, chain, receiver, refund, bounty.status, bounty.author_user_id );
+    withdrawlog.send( bounty_id, chain, receiver, bounty.amount, bounty.status, bounty.author_user_id );
 }
 
 // @applicant
@@ -450,7 +455,9 @@ void pomelo::claim( const name bounty_id, const name chain, const string receive
     handle_bridge_transfer( chain, receiver, bounty.amount, *memo, "🍈 claim https://bounties.pomelo.io/" + bounty_id.to_string() + " bounty" );
 
     // transfer fee to fee account
-    transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
+    if ( bounty.fee.quantity.amount > 0 ) {
+        transfer( get_self(), get_configs().fee_account, bounty.fee, "🍈 Pomelo team");
+    }
 
     // set bounty amount to zero
     _bounties.modify( bounty, get_self(), [&]( auto & row ) {
