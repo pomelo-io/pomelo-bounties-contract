@@ -204,6 +204,7 @@ void pomelo::approve( const name bounty_id, const name applicant_user_id )
     eosn::login::require_auth_user_id( bounty.author_user_id, get_configs().login_contract );
 
     // validate input
+    check( eosn::login::is_user_id_exists( applicant_user_id, get_configs().login_contract ), "pomelo::approve: [applicant_user_id] does not exists");
     check( bounty.status == "open"_n, "pomelo::approve: [bounty.status] must be `open` to `approve`" );
     check( bounty.applicant_user_ids.find( applicant_user_id ) != bounty.applicant_user_ids.end(), "pomelo::approve: [applicant_user_id] did not apply" );
 
