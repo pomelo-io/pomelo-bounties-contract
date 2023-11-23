@@ -357,8 +357,10 @@ void pomelo::withdraw( const name bounty_id, const name chain, const string rece
     check( bounty.amount.quantity.amount > 0, "pomelo::withdraw: nothing to withdraw" );
     check( bounty.claimed.amount == 0, "pomelo::withdraw: [bounty_id] already claimed" );
 
+    const auto refund_amount = bounty.amount;
+
     // tranfer bounty funds to receiver
-    handle_bridge_transfer( chain, receiver, bounty.amount, *memo, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
+    handle_bridge_transfer( chain, receiver, refund_amount, *memo, "🍈 withdraw " + bounty_id.to_string() + " bounty" );
 
     // transfer fee to fee account
     if ( bounty.fee.quantity.amount > 0 ) {
@@ -373,7 +375,7 @@ void pomelo::withdraw( const name bounty_id, const name chain, const string rece
         row.updated_at = current_time_point();
     });
     pomelo::withdrawlog_action withdrawlog( get_self(), { get_self(), "active"_n });
-    withdrawlog.send( bounty_id, chain, receiver, bounty.amount, bounty.status, bounty.author_user_id );
+    withdrawlog.send( bounty_id, chain, receiver, refund_amount, bounty.status, bounty.author_user_id );
 }
 
 // @applicant
@@ -471,7 +473,7 @@ void pomelo::claim( const name bounty_id, const name chain, const string receive
 
     const uint32_t sec_since_created = current_time_point().sec_since_epoch() - bounty.created_at.sec_since_epoch();
     pomelo::claimlog_action claimlog( get_self(), { get_self(), "active"_n });
-    claimlog.send( bounty_id, chain, receiver, bounty.amount, bounty.fee.quantity, bounty.status, bounty.approved_user_id, sec_since_created / DAY );
+    claimlog.send( bounty_id, chain, receiver, bounty.amount, bounty.fee.quantity, "done"_n, bounty.approved_user_id, sec_since_created / DAY );
 }
 
 void pomelo::transfer( const name from, const name to, const extended_asset value, const string memo )
