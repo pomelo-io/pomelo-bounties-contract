@@ -132,6 +132,7 @@ $ ./test.sh
 ## Table of Content
 
 ### Tables
+- [TABLE `deposits`](#table-deposits)
 - [TABLE `configs`](#table-configs)
 - [TABLE `bounties`](#table-bounties)
 - [TABLE `transfers`](#table-transfers)
@@ -159,6 +160,27 @@ $ ./test.sh
 ### Action Notifications
 - [TRANSFER NOTIFY HANDLER `on_transfer`](#transfer-notify-handler-on_transfer)
 
+## TABLE `deposits`
+
+*scope*: `{name} bount_id`
+
+### params
+
+- `{uint64_t} id` - (primary key) deposit ID
+- `{name} from` - sender account (EOSN Login ID or EOS account)
+- `{asset} quantity` - token quantity
+- `{time_point_sec} timestamp` - timestamp
+
+### example
+
+```json
+{
+    "id": 1,
+    "from": "1111234.eosn",
+    "quantity": "5.0000 USDT",
+    "timestamp": "2023-12-01T00:00:00"
+}
+```
 
 ## TABLE `configs`
 
