@@ -73,6 +73,7 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
         row.from = from;
         row.quantity = quantity;
         row.timestamp = current_time_point();
+        row.trx_id = get_trx_id();
     });
 
     // deposit log

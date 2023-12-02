@@ -170,6 +170,7 @@ $ ./test.sh
 - `{name} from` - sender account (EOSN Login ID or EOS account)
 - `{asset} quantity` - token quantity
 - `{time_point_sec} timestamp` - timestamp
+- `{checksum256} trx_id` - transaction ID
 
 ### example
 
@@ -178,7 +179,8 @@ $ ./test.sh
     "id": 1,
     "from": "1111234.eosn",
     "quantity": "5.0000 USDT",
-    "timestamp": "2023-12-01T00:00:00"
+    "timestamp": "2023-12-01T00:00:00",
+    "trx_id": "33916e02c5fdc40c7c7d08598a606e51bcd93fc0003316fd85a335eedf58d26b"
 }
 ```
 
