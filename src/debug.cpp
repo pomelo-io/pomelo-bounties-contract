@@ -20,9 +20,11 @@ void pomelo::cleartable( const name table_name, const optional<name> scope, cons
     pomelo::bounties_table _bounties( get_self(), value );
     pomelo::tokens_table _tokens( get_self(), value );
     pomelo::configs_table _configs( get_self(), value );
+    pomelo::deposits_table _deposits( get_self(), value );
 
     if (table_name == "bounties"_n) clear_table( _bounties, rows_to_clear );
     else if (table_name == "tokens"_n) clear_table( _tokens, rows_to_clear );
+    else if (table_name == "deposits"_n) clear_table( _deposits, rows_to_clear );
     else if (table_name == "configs"_n) _configs.remove();
     else check(false, "pomelo::cleartable: [table_name] unknown table to clear" );
 }

@@ -66,6 +66,17 @@ void pomelo::deposit_bounty( const name bounty_id, const name user_id, const nam
         check( total <= max_amount, "pomelo::deposit_bounty: [quantity=" + ext_quantity.quantity.to_string() + "] is greater than [tokens.max_amount=" + to_string( max_amount ) + "]");
     });
 
+    // track unique deposits
+    pomelo::deposits_table _deposits( get_self(), bounty_id.value );
+    _deposits.emplace( get_self(), [&]( auto & row ) {
+        row.id = _deposits.available_primary_key();
+        row.from = from;
+        row.quantity = quantity;
+        row.timestamp = current_time_point();
+        row.trx_id = get_trx_id();
+    });
+
+    // deposit log
     pomelo::depositlog_action depositlog( get_self(), { get_self(), "active"_n });
     depositlog.send( bounty_id, funder_user_id, from, amount, fee.quantity, value, memo );
 }
